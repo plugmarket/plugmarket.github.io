@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plugin Store</title>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px}.container{max-width:1400px;margin:0 auto}header{background:rgba(255,255,255,0.95);padding:30px;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,0.2);margin-bottom:30px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}.header-left h1{color:#667eea;font-size:2.5em;margin-bottom:10px}.subtitle{color:#666;font-size:1.1em}.user-info{text-align:right}.user-name{font-size:1.2em;color:#333;margin-bottom:5px}.user-id{color:#666;font-size:0.9em}.user-stats{display:flex;gap:15px;margin-top:10px;font-size:0.9em}.stat-item{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:5px 12px;border-radius:15px}.btn-logout{margin-top:10px;padding:8px 20px;background:#ef4444;color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.9em}.btn-logout:hover{background:#dc2626}.search-section{background:white;padding:20px;border-radius:15px;margin-bottom:20px;box-shadow:0 5px 20px rgba(0,0,0,0.1)}.search-bar{display:flex;gap:10px;margin-bottom:15px}.search-input{flex:1;padding:15px;border:2px solid #e5e7eb;border-radius:10px;font-size:1em}.search-input:focus{outline:none;border-color:#667eea}.btn-search{padding:15px 30px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border:none;border-radius:10px;cursor:pointer;font-size:1em;font-weight:bold}.category-tags{display:flex;gap:10px;flex-wrap:wrap}.category-tag{padding:8px 15px;background:#f3f4f6;border:none;border-radius:20px;cursor:pointer;font-size:0.9em}.category-tag:hover{background:#e5e7eb}.category-tag.active{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}.filters{display:flex;gap:15px;margin-bottom:30px;flex-wrap:wrap;align-items:center}.filter-btn{background:white;border:none;padding:12px 25px;border-radius:25px;cursor:pointer;font-size:1em;box-shadow:0 4px 15px rgba(0,0,0,0.1)}.filter-btn:hover{transform:translateY(-2px)}.filter-btn.active{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}.sort-select{padding:12px 20px;border:none;border-radius:25px;background:white;cursor:pointer;font-size:1em;box-shadow:0 4px 15px rgba(0,0,0,0.1)}.plugins-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:25px;margin-bottom:30px}.plugin-card{background:white;border-radius:15px;padding:25px;box-shadow:0 10px 30px rgba(0,0,0,0.1);transition:all 0.3s;cursor:pointer}.plugin-card:hover{transform:translateY(-5px);box-shadow:0 15px 40px rgba(0,0,0,0.2)}.plugin-title{font-size:1.5em;color:#333;margin-bottom:5px}.plugin-badge{padding:5px 15px;border-radius:20px;font-size:0.85em;font-weight:bold;background:#10b981;color:white}.plugin-category{display:inline-block;padding:3px 10px;background:#f3f4f6;border-radius:10px;font-size:0.8em;color:#666;margin-bottom:10px}.plugin-description{color:#666;margin-bottom:15px;line-height:1.6}.plugin-version{color:#999;font-size:0.9em;margin-bottom:15px}.plugin-rating{display:flex;align-items:center;gap:5px;margin-bottom:10px}.stars{color:#fbbf24}.rating-count{color:#999;font-size:0.9em}.plugin-downloads{color:#666;font-size:0.9em;margin-bottom:15px}.plugin-footer{display:flex;gap:10px}.btn{flex:1;padding:12px;border:none;border-radius:10px;cursor:pointer;font-size:1em;font-weight:bold;transition:all 0.3s}.btn-primary{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}.btn-primary:hover{transform:scale(1.05)}.btn-secondary{background:#f3f4f6;color:#667eea}.btn-secondary:hover{background:#e5e7eb}.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;justify-content:center;align-items:center}.modal.active{display:flex}.modal-content{background:white;padding:40px;border-radius:20px;max-width:600px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)}.modal-header{font-size:1.8em;margin-bottom:20px;color:#333}.modal-body{margin-bottom:20px;line-height:1.8;color:#666}.modal-footer{display:flex;gap:10px}.login-form{display:flex;flex-direction:column;gap:15px}.form-group{display:flex;flex-direction:column;gap:5px}.form-group label{color:#333;font-weight:bold}.form-group input,.form-group textarea{padding:12px;border:2px solid #e5e7eb;border-radius:8px;font-size:1em;font-family:inherit}.form-group input:focus,.form-group textarea:focus{outline:none;border-color:#667eea}.star-rating{display:flex;gap:5px;font-size:2em}.star{cursor:pointer;color:#d1d5db}.star:hover,.star.active{color:#fbbf24}.reviews-section{margin-top:20px;padding-top:20px;border-top:2px solid #e5e7eb}.review-item{background:#f9fafb;padding:15px;border-radius:10px;margin-bottom:15px}.review-header{display:flex;justify-content:space-between;margin-bottom:10px}.review-author{font-weight:bold;color:#333}.review-date{color:#999;font-size:0.9em}.review-text{color:#666;line-height:1.6}.history-btn{position:fixed;bottom:30px;right:30px;background:white;padding:15px 20px;border-radius:30px;box-shadow:0 10px 30px rgba(0,0,0,0.2);cursor:pointer;z-index:100;font-weight:bold;color:#667eea}.history-item{background:#f9fafb;padding:20px;border-radius:10px;margin-bottom:15px;border-left:4px solid #667eea}.discord-login-container{text-align:center;padding:20px}.discord-logo{font-size:4em;margin-bottom:20px}.discord-description{color:#666;font-size:1.1em;margin-bottom:30px;line-height:1.6}@media(max-width:768px){.plugins-grid{grid-template-columns:1fr}header{flex-direction:column;text-align:center}}
+        *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px}.container{max-width:1400px;margin:0 auto}header{background:rgba(255,255,255,0.95);padding:30px;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,0.2);margin-bottom:30px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}.header-left h1{color:#667eea;font-size:2.5em;margin-bottom:10px}.subtitle{color:#666;font-size:1.1em}.user-info{text-align:right}.user-name{font-size:1.2em;color:#333;margin-bottom:5px}.user-id{color:#666;font-size:0.9em}.user-stats{display:flex;gap:15px;margin-top:10px;font-size:0.9em}.stat-item{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:5px 12px;border-radius:15px}.btn-logout{margin-top:10px;padding:8px 20px;background:#ef4444;color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.9em}.btn-logout:hover{background:#dc2626}.search-section{background:white;padding:20px;border-radius:15px;margin-bottom:20px;box-shadow:0 5px 20px rgba(0,0,0,0.1)}.search-bar{display:flex;gap:10px;margin-bottom:15px}.search-input{flex:1;padding:15px;border:2px solid #e5e7eb;border-radius:10px;font-size:1em}.search-input:focus{outline:none;border-color:#667eea}.btn-search{padding:15px 30px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border:none;border-radius:10px;cursor:pointer;font-size:1em;font-weight:bold}.category-tags{display:flex;gap:10px;flex-wrap:wrap}.category-tag{padding:8px 15px;background:#f3f4f6;border:none;border-radius:20px;cursor:pointer;font-size:0.9em}.category-tag:hover{background:#e5e7eb}.category-tag.active{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}.filters{display:flex;gap:15px;margin-bottom:30px;flex-wrap:wrap;align-items:center}.filter-btn{background:white;border:none;padding:12px 25px;border-radius:25px;cursor:pointer;font-size:1em;box-shadow:0 4px 15px rgba(0,0,0,0.1)}.filter-btn:hover{transform:translateY(-2px)}.filter-btn.active{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}.sort-select{padding:12px 20px;border:none;border-radius:25px;background:white;cursor:pointer;font-size:1em;box-shadow:0 4px 15px rgba(0,0,0,0.1)}.plugins-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:25px;margin-bottom:30px}.plugin-card{background:white;border-radius:15px;padding:25px;box-shadow:0 10px 30px rgba(0,0,0,0.1);transition:all 0.3s;cursor:pointer}.plugin-card:hover{transform:translateY(-5px);box-shadow:0 15px 40px rgba(0,0,0,0.2)}.plugin-title{font-size:1.5em;color:#333;margin-bottom:5px}.plugin-badge{padding:5px 15px;border-radius:20px;font-size:0.85em;font-weight:bold;background:#10b981;color:white}.plugin-category{display:inline-block;padding:3px 10px;background:#f3f4f6;border-radius:10px;font-size:0.8em;color:#666;margin-bottom:10px}.plugin-description{color:#666;margin-bottom:15px;line-height:1.6}.plugin-version{color:#999;font-size:0.9em;margin-bottom:15px}.plugin-rating{display:flex;align-items:center;gap:5px;margin-bottom:10px}.stars{color:#fbbf24}.rating-count{color:#999;font-size:0.9em}.plugin-downloads{color:#666;font-size:0.9em;margin-bottom:15px}.plugin-footer{display:flex;gap:10px}.btn{flex:1;padding:12px;border:none;border-radius:10px;cursor:pointer;font-size:1em;font-weight:bold;transition:all 0.3s}.btn-primary{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}.btn-primary:hover{transform:scale(1.05)}.btn-secondary{background:#f3f4f6;color:#667eea}.btn-secondary:hover{background:#e5e7eb}.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;justify-content:center;align-items:center}.modal.active{display:flex}.modal-content{background:white;padding:40px;border-radius:20px;max-width:600px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)}.modal-header{font-size:1.8em;margin-bottom:20px;color:#333}.modal-body{margin-bottom:20px;line-height:1.8;color:#666}.modal-footer{display:flex;gap:10px}.form-group{display:flex;flex-direction:column;gap:5px}.form-group label{color:#333;font-weight:bold}.form-group input,.form-group textarea{padding:12px;border:2px solid #e5e7eb;border-radius:8px;font-size:1em;font-family:inherit}.form-group input:focus,.form-group textarea:focus{outline:none;border-color:#667eea}.star-rating{display:flex;gap:5px;font-size:2em}.star{cursor:pointer;color:#d1d5db}.star:hover,.star.active{color:#fbbf24}.reviews-section{margin-top:20px;padding-top:20px;border-top:2px solid #e5e7eb}.review-item{background:#f9fafb;padding:15px;border-radius:10px;margin-bottom:15px}.review-header{display:flex;justify-content:space-between;margin-bottom:10px}.review-author{font-weight:bold;color:#333}.review-date{color:#999;font-size:0.9em}.review-text{color:#666;line-height:1.6}.history-btn{position:fixed;bottom:30px;right:30px;background:white;padding:15px 20px;border-radius:30px;box-shadow:0 10px 30px rgba(0,0,0,0.2);cursor:pointer;z-index:100;font-weight:bold;color:#667eea}.history-item{background:#f9fafb;padding:20px;border-radius:10px;margin-bottom:15px;border-left:4px solid #667eea}.discord-login-container{text-align:center;padding:40px 20px}.discord-logo{font-size:5em;margin-bottom:20px;animation:pulse 2s infinite}.discord-title{font-size:2em;color:#333;margin-bottom:15px;font-weight:bold}.discord-description{color:#666;font-size:1.1em;margin-bottom:40px;line-height:1.8}.discord-btn{display:inline-flex;align-items:center;gap:12px;padding:18px 40px;background:linear-gradient(135deg,#5865F2 0%,#424FEF 100%);color:white;border:none;border-radius:12px;font-size:1.2em;font-weight:bold;cursor:pointer;transition:all 0.3s;box-shadow:0 8px 25px rgba(88,101,242,0.4)}.discord-btn:hover{transform:translateY(-3px);box-shadow:0 12px 35px rgba(88,101,242,0.5)}.discord-info{background:linear-gradient(135deg,#f3f4f6 0%,#e5e7eb 100%);padding:20px;border-radius:12px;margin-top:30px;font-size:0.95em;color:#555;text-align:left;border-left:4px solid #5865F2}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}@media(max-width:768px){.plugins-grid{grid-template-columns:1fr}header{flex-direction:column;text-align:center}}
     </style>
 </head>
 <body>
@@ -55,16 +55,22 @@
     <div class="modal active" id="loginModal">
         <div class="modal-content">
             <div class="discord-login-container">
-                <div class="discord-logo">🎮</div>
-                <h2 class="modal-header">Plugin Store에 오신 것을 환영합니다</h2>
+                <div class="discord-logo">💬</div>
+                <h2 class="discord-title">Plugin Store</h2>
                 <p class="discord-description">
-                    디스코드 계정으로 로그인하여<br>
-                    다양한 마인크래프트 플러그인을 다운로드하고<br>
-                    리뷰를 작성해보세요!
+                    디스코드 계정으로 간편하게 로그인하고<br>
+                    다양한 마인크래프트 플러그인을 다운로드하세요!
                 </p>
-                <button class="btn btn-primary" onclick="discordLogin()" style="background:linear-gradient(135deg,#5865F2 0%,#424FEF 100%);padding:15px 40px;font-size:1.1em">
-                    <span style="font-size:1.2em">💬</span> Discord로 로그인
+                <button class="discord-btn" onclick="discordLogin()">
+                    <span style="font-size:1.3em">💬</span>
+                    <span>Discord로 로그인</span>
                 </button>
+                <div class="discord-info">
+                    <strong>🔒 안전한 인증</strong><br>
+                    • Discord OAuth 2.0 공식 인증 시스템<br>
+                    • 비밀번호는 저장되지 않습니다<br>
+                    • 언제든지 권한을 취소할 수 있습니다
+                </div>
             </div>
         </div>
     </div>
@@ -111,49 +117,58 @@
 let plugins={},currentUser=null,currentFilter='all',currentCategory='all',currentSort='popular',selectedRating=0,currentPlugin=null;
 const WEBHOOK='https://discord.com/api/webhooks/1425431420158869584/_H7Fr8vnzydAuqVoQ8Sbm5c2wHlb7EL8XXAIadq1waQGaaPCvJYGjhQotyWU4DHY0-zv';
 const DISCORD_CLIENT_ID='1414591036734312499';
+const REDIRECT_URI=window.location.origin+window.location.pathname;
 const initialData={p1:{id:'p1',name:"CookingPlugin",description:"요리 시스템",version:"1.0",type:"free",category:"게임플레이",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/uqe6g4wu4vwlfh46qd9i4/CookingPlugin.jar?rlkey=nrxb0beuwyjbxqxq8d9w2oei4&st=sv9nvc3q&dl=1"},p2:{id:'p2',name:"ItemsAdder",description:"커스텀 아이템",version:"1.2",type:"free",category:"커스텀",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/jnqiumuvlm9ibos0amapv/itemsadder-1.2-paper.jar?rlkey=37p1s990yx23j2c6b4j3sjpv6&st=u3c9s9qf&dl=1"},p3:{id:'p3',name:"QuestPlugin",description:"퀘스트 시스템",version:"1.5",type:"free",category:"RPG",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/j7d7lh2skws90d3hqrwa1/QuestPlugin-1.5-paper.jar?rlkey=9h8n0sr4tyem40jb2bemdok6k&st=31siar1m&dl=1"},p4:{id:'p4',name:"RankPlugin",description:"등급 시스템",version:"1.0",type:"free",category:"시스템",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/o3ig4n0gxrlxuz01j1j7r/rankplugin-1.0-paper.jar?rlkey=t699uhu6eck878a6u6y36f8fq&st=i4gpgqga&dl=1"},p5:{id:'p5',name:"RoulettePlugin",description:"룰렛",version:"1.0",type:"free",category:"게임플레이",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/fsrnzk9u7vet81euq3afr/RoulettePlugin-1.0-paper.jar?rlkey=yi40cimkve8lim2cg4isr8n6k&st=qbfrlmyz&dl=1"},p6:{id:'p6',name:"ShopSystem",description:"상점",version:"1.2",type:"free",category:"경제",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/ld31twop0v6v454dhhet0/Shopsystem-1.2-paper.jar?rlkey=we1a2xxv5m25lq1wghj0o1ugf&st=068q0ixb&dl=1"},p7:{id:'p7',name:"SkillSystem",description:"스킬",version:"1.0",type:"free",category:"RPG",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/akw2azo96zgw4pjp1jus2/SkillSystem-1.0-paper.jar?rlkey=m3dxjilfwgm9gt68vpzk9yhlh&st=a5cn74qy&dl=1"},p8:{id:'p8',name:"SpectatorOnDeath",description:"관전",version:"1.0",type:"free",category:"게임플레이",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/xc2fyqs65nuymhhqwzuc3/SpectatorOnDeath-1.0-paper.jar?rlkey=fwmas7lvqek4ej1atni7gwki5&st=sutonbm3&dl=1"},p9:{id:'p9',name:"SwordPlugin",description:"검",version:"1.2",type:"free",category:"커스텀",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/seacbjovms352dw3yyga9/sword-1.2-paper.jar?rlkey=5cdesj2v2ax436ze7905fiifp&st=szgdpnve&dl=1"}};
 
 function loadLocal(){const s=localStorage.getItem('plugins');plugins=s?JSON.parse(s):initialData}
 function saveLocal(){localStorage.setItem('plugins',JSON.stringify(plugins))}
-async function sendDiscord(msg){try{await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"📥 다운로드 알림",description:msg,color:6750054,timestamp:new Date().toISOString()}]})})}catch(e){}}
+async function sendDiscord(msg){try{await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"📥 알림",description:msg,color:6750054,timestamp:new Date().toISOString()}]})})}catch(e){}}
 
 function init(){
     loadLocal();
     setupListeners();
     renderPlugins();
+    handleOAuthCallback();
     const u=localStorage.getItem('currentUser');
     if(u){
         currentUser=JSON.parse(u);
         showUserInfo();
     }
-    checkDiscordCallback();
 }
 
-function checkDiscordCallback(){
+function handleOAuthCallback(){
     const params=new URLSearchParams(window.location.search);
     const code=params.get('code');
+    
     if(code){
-        alert('디스코드 OAuth 인증이 완료되었습니다!\n\n실제 서버 환경에서는 백엔드에서 토큰을 교환하여 사용자 정보를 가져옵니다.\n\n현재는 데모 모드로 임시 계정으로 로그인됩니다.');
+        const state=params.get('state');
+        const minecraftId=state?decodeURIComponent(state):'Player'+Math.floor(Math.random()*9999);
+        
         currentUser={
-            name:'Discord User',
-            minecraftId:'DiscordUser#' + Math.floor(Math.random()*9999),
-            discordId:code,
+            discordCode:code,
+            minecraftId:minecraftId,
+            username:'Discord User',
+            loginTime:new Date().toISOString(),
             downloads:[],
             reviews:{}
         };
+        
         localStorage.setItem('currentUser',JSON.stringify(currentUser));
         window.history.replaceState({},document.title,window.location.pathname);
         document.getElementById('loginModal').classList.remove('active');
         showUserInfo();
         renderPlugins();
+        
+        sendDiscord(`**✅ 새로운 로그인**\n**사용자:** ${currentUser.username}\n**마인크래프트:** ${currentUser.minecraftId}\n**시간:** ${new Date().toLocaleString('ko-KR')}`);
     }
 }
 
 function showUserInfo(){
-    document.getElementById('userName').textContent=currentUser.name+'님';
+    document.getElementById('userName').textContent=(currentUser.username||'User')+'님';
     document.getElementById('userIdDisplay').textContent='MC: '+currentUser.minecraftId;
     document.getElementById('userInfo').style.display='block';
     document.getElementById('historyBtn').style.display='block';
+    document.getElementById('loginModal').classList.remove('active');
     updateUserStats();
 }
 
@@ -187,9 +202,14 @@ function setupListeners(){
 }
 
 window.discordLogin=function(){
-    const redirectUri=encodeURIComponent(window.location.origin+window.location.pathname);
+    const minecraftId=prompt('마인크래프트 아이디를 입력하세요:','Player'+Math.floor(Math.random()*9999));
+    if(!minecraftId)return;
+    
+    const state=encodeURIComponent(minecraftId);
+    const redirectUri=encodeURIComponent(REDIRECT_URI);
     const scopes='identify';
-    window.location.href=`https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scopes}`;
+    
+    window.location.href=`https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scopes}&state=${state}`;
 };
 
 window.logout=function(){
@@ -281,7 +301,7 @@ window.downloadPlugin=async function(pid){
     localStorage.setItem('currentUser',JSON.stringify(currentUser));
     updateUserStats();
     renderPlugins();
-    await sendDiscord(`**플러그인:** ${p.name}\n**사용자:** ${currentUser.name}(${currentUser.minecraftId})\n**시간:** ${rec.date}\n**총 다운로드:** ${p.downloads}회`);
+    await sendDiscord(`**📥 다운로드**\n**플러그인:** ${p.name}\n**사용자:** ${currentUser.username}\n**마인크래프트:** ${currentUser.minecraftId}\n**시간:** ${rec.date}\n**총 다운로드:** ${p.downloads}회`);
     alert('✅ 다운로드가 시작되었습니다!');
 };
 
@@ -317,7 +337,7 @@ window.submitReview=async function(){
         alert('리뷰 내용을 입력해주세요');
         return;
     }
-    const r={author:currentUser.name,rating:selectedRating,text:t,date:new Date().toLocaleString('ko-KR')};
+    const r={author:currentUser.username,rating:selectedRating,text:t,date:new Date().toLocaleString('ko-KR')};
     if(!currentPlugin.reviews)currentPlugin.reviews={};
     currentPlugin.reviews[currentUser.minecraftId]=r;
     const v=Object.values(currentPlugin.reviews);
