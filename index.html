@@ -293,7 +293,7 @@
         </button>
         
         <div class="info-box">
-            <strong>🔐 안전한 인증</strong>
+            <strong>🔒 안전한 인증</strong>
             <ul>
                 <li>Discord OAuth 2.0 공식 인증</li>
                 <li>비밀번호는 저장되지 않습니다</li>
@@ -303,7 +303,7 @@
         
         <div class="features">
             <div class="feature-item">
-                <strong>📥 무료 다운로드</strong>
+                <strong>🔥 무료 다운로드</strong>
                 모든 플러그인 무료 제공
             </div>
             <div class="feature-item">
@@ -315,7 +315,7 @@
                 언제든지 재다운로드
             </div>
             <div class="feature-item">
-                <strong>📄 자동 업데이트</strong>
+                <strong>🔄 자동 업데이트</strong>
                 최신 버전 유지
             </div>
         </div>
@@ -323,7 +323,6 @@
     
     <script>
         const DISCORD_CLIENT_ID = '1414591036734312499';
-        // 현재 페이지의 도메인을 기반으로 리다이렉트 URI 설정
         const REDIRECT_URI = window.location.origin + '/home.html';
         
         function discordLogin() {
@@ -344,6 +343,12 @@
             const scopes = 'identify';
             
             window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scopes}&state=${state}`;
+        }
+        
+        // 이미 로그인되어 있으면 home.html로 리다이렉트
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            window.location.href = 'home.html';
         }
         
         // 페이지 로드 시 애니메이션 효과
