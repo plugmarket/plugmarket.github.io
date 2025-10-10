@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
+<html lang="ko"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plugin Store - 로그인</title>
@@ -261,7 +259,7 @@
     </style>
 </head>
 <body>
-    <div class="login-container">
+    <div class="login-container" style="animation: 0.6s ease-out 0s 1 normal none running slideUp;">
         <div class="logo">🎮</div>
         <h1 class="title">Plugin Store</h1>
         <p class="subtitle">
@@ -272,13 +270,7 @@
         <div class="divider"></div>
         
         <div class="widget-container">
-            <iframe 
-                src="https://discord.com/widget?id=1420030738346152093&theme=dark" 
-                width="350" 
-                height="400" 
-                allowtransparency="true" 
-                frameborder="0" 
-                sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
+            <iframe src="https://discord.com/widget?id=1420030738346152093&amp;theme=dark" width="350" height="400" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
             </iframe>
         </div>
         
@@ -293,7 +285,7 @@
         </button>
         
         <div class="info-box">
-            <strong>🔒 안전한 인증</strong>
+            <strong>🔐 안전한 인증</strong>
             <ul>
                 <li>Discord OAuth 2.0 공식 인증</li>
                 <li>비밀번호는 저장되지 않습니다</li>
@@ -303,7 +295,7 @@
         
         <div class="features">
             <div class="feature-item">
-                <strong>🔥 무료 다운로드</strong>
+                <strong>📥 무료 다운로드</strong>
                 모든 플러그인 무료 제공
             </div>
             <div class="feature-item">
@@ -315,7 +307,7 @@
                 언제든지 재다운로드
             </div>
             <div class="feature-item">
-                <strong>🔄 자동 업데이트</strong>
+                <strong>📄 자동 업데이트</strong>
                 최신 버전 유지
             </div>
         </div>
@@ -323,7 +315,6 @@
     
     <script>
         const DISCORD_CLIENT_ID = '1414591036734312499';
-        const REDIRECT_URI = window.location.origin + '/home.html';
         
         function discordLogin() {
             const minecraftId = prompt('마인크래프트 아이디를 입력하세요:', 'Player' + Math.floor(Math.random() * 9999));
@@ -338,23 +329,25 @@
                 return;
             }
             
+            // 메모리에 임시 저장
+            sessionData = {
+                minecraftId: minecraftId,
+                loginTime: new Date().getTime()
+            };
+            
             const state = encodeURIComponent(minecraftId);
-            const redirectUri = encodeURIComponent(REDIRECT_URI);
+            const redirectUri = encodeURIComponent('http://localhost/home.html');
             const scopes = 'identify';
             
             window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scopes}&state=${state}`;
         }
         
-        // 이미 로그인되어 있으면 home.html로 리다이렉트
-        const currentUser = localStorage.getItem('currentUser');
-        if (currentUser) {
-            window.location.href = 'home.html';
-        }
+        // 메모리에 사용자 데이터 저장
+        let sessionData = null;
         
-        // 페이지 로드 시 애니메이션 효과
         window.addEventListener('load', function() {
             document.querySelector('.login-container').style.animation = 'slideUp 0.6s ease-out';
         });
     </script>
-</body>
-</html>
+
+</body></html>
