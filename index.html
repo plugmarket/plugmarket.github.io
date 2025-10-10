@@ -5,258 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plugin Store - 로그인</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{
+            font-family:'Segoe UI',sans-serif;
+            background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:20px;
         }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            position: relative;
-            overflow: hidden;
+        .login-container{
+            background:white;
+            padding:60px 40px;
+            border-radius:30px;
+            box-shadow:0 20px 60px rgba(0,0,0,0.3);
+            max-width:500px;
+            width:100%;
+            text-align:center;
         }
-        
-        body::before {
-            content: '';
-            position: absolute;
-            width: 500px;
-            height: 500px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            top: -250px;
-            right: -250px;
-            animation: float 6s ease-in-out infinite;
+        .logo{
+            font-size:5em;
+            margin-bottom:20px;
+            animation:pulse 2s infinite;
         }
-        
-        body::after {
-            content: '';
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 50%;
-            bottom: -200px;
-            left: -200px;
-            animation: float 8s ease-in-out infinite reverse;
+        @keyframes pulse{
+            0%,100%{transform:scale(1)}
+            50%{transform:scale(1.1)}
         }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+        .title{
+            font-size:2.5em;
+            color:#333;
+            margin-bottom:15px;
+            font-weight:bold;
         }
-        
-        .login-container {
-            background: white;
-            padding: 60px 40px;
-            border-radius: 30px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-            animation: slideUp 0.6s ease-out;
+        .subtitle{
+            color:#666;
+            font-size:1.1em;
+            margin-bottom:40px;
+            line-height:1.6;
         }
-        
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .widget-container{
+            margin:30px 0;
+            display:flex;
+            justify-content:center;
         }
-        
-        .logo {
-            font-size: 5em;
-            margin-bottom: 20px;
-            animation: pulse 2s infinite;
+        .discord-btn{
+            display:inline-flex;
+            align-items:center;
+            gap:12px;
+            padding:18px 40px;
+            background:linear-gradient(135deg,#5865F2 0%,#424FEF 100%);
+            color:white;
+            border:none;
+            border-radius:12px;
+            font-size:1.2em;
+            font-weight:bold;
+            cursor:pointer;
+            transition:all 0.3s;
+            box-shadow:0 8px 25px rgba(88,101,242,0.4);
+            width:100%;
+            justify-content:center;
         }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+        .discord-btn:hover{
+            transform:translateY(-3px);
+            box-shadow:0 12px 35px rgba(88,101,242,0.5);
         }
-        
-        .title {
-            font-size: 2.5em;
-            color: #333;
-            margin-bottom: 15px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .info-box{
+            background:linear-gradient(135deg,#f3f4f6 0%,#e5e7eb 100%);
+            padding:20px;
+            border-radius:12px;
+            margin-top:30px;
+            font-size:0.95em;
+            color:#555;
+            text-align:left;
+            border-left:4px solid #5865F2;
         }
-        
-        .subtitle {
-            color: #666;
-            font-size: 1.1em;
-            margin-bottom: 30px;
-            line-height: 1.6;
+        .info-box strong{
+            display:block;
+            margin-bottom:10px;
+            color:#333;
         }
-        
-        .widget-container {
-            margin: 30px 0;
-            display: flex;
-            justify-content: center;
+        .features{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:15px;
+            margin-top:30px;
         }
-        
-        .widget-container iframe {
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s;
+        .feature-item{
+            background:#f9fafb;
+            padding:15px;
+            border-radius:10px;
+            font-size:0.9em;
+            color:#666;
         }
-        
-        .widget-container iframe:hover {
-            transform: translateY(-5px);
+        .feature-item strong{
+            display:block;
+            color:#667eea;
+            margin-bottom:5px;
         }
-        
-        .discord-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            padding: 18px 40px;
-            background: linear-gradient(135deg, #5865F2 0%, #424FEF 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.2em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.4);
-            width: 100%;
-            justify-content: center;
-        }
-        
-        .discord-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(88, 101, 242, 0.5);
-        }
-        
-        .discord-btn:active {
-            transform: translateY(-1px);
-        }
-        
-        .info-box {
-            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 30px;
-            font-size: 0.95em;
-            color: #555;
-            text-align: left;
-            border-left: 4px solid #5865F2;
-        }
-        
-        .info-box strong {
-            display: block;
-            margin-bottom: 10px;
-            color: #333;
-            font-size: 1.1em;
-        }
-        
-        .info-box ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        
-        .info-box li {
-            padding: 5px 0;
-            padding-left: 20px;
-            position: relative;
-        }
-        
-        .info-box li::before {
-            content: '✓';
-            position: absolute;
-            left: 0;
-            color: #5865F2;
-            font-weight: bold;
-        }
-        
-        .features {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 30px;
-        }
-        
-        .feature-item {
-            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
-            padding: 20px;
-            border-radius: 12px;
-            font-size: 0.9em;
-            color: #666;
-            transition: all 0.3s;
-            border: 2px solid transparent;
-        }
-        
-        .feature-item:hover {
-            transform: translateY(-5px);
-            border-color: #667eea;
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
-        }
-        
-        .feature-item strong {
-            display: block;
-            color: #667eea;
-            margin-bottom: 8px;
-            font-size: 1.1em;
-        }
-        
-        .divider {
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
-            margin: 30px 0;
-        }
-        
-        .note {
-            background: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            text-align: left;
-            font-size: 0.9em;
-            color: #92400e;
-        }
-        
-        .note strong {
-            color: #78350f;
-        }
-        
-        @media (max-width: 768px) {
-            .login-container {
-                padding: 40px 20px;
-            }
-            
-            .features {
-                grid-template-columns: 1fr;
-            }
-            
-            .logo {
-                font-size: 4em;
-            }
-            
-            .title {
-                font-size: 2em;
-            }
-            
-            .widget-container iframe {
-                width: 100% !important;
-                max-width: 350px;
-            }
+        @media(max-width:768px){
+            .login-container{padding:40px 20px}
+            .features{grid-template-columns:1fr}
         }
     </style>
 </head>
@@ -269,8 +119,6 @@
             오신 것을 환영합니다!
         </p>
         
-        <div class="divider"></div>
-        
         <div class="widget-container">
             <iframe 
                 src="https://discord.com/widget?id=1420030738346152093&theme=dark" 
@@ -278,13 +126,9 @@
                 height="400" 
                 allowtransparency="true" 
                 frameborder="0" 
-                sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
+                sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+                style="border-radius:12px;box-shadow:0 8px 25px rgba(0,0,0,0.2)">
             </iframe>
-        </div>
-        
-        <div class="note">
-            <strong>⚠️ 중요</strong><br>
-            위 Discord 위젯에서 먼저 서버에 참여해주세요!
         </div>
         
         <button class="discord-btn" onclick="discordLogin()">
@@ -294,17 +138,15 @@
         
         <div class="info-box">
             <strong>🔒 안전한 인증</strong>
-            <ul>
-                <li>Discord OAuth 2.0 공식 인증</li>
-                <li>비밀번호는 저장되지 않습니다</li>
-                <li>언제든지 권한 취소 가능</li>
-            </ul>
+            • Discord OAuth 2.0 공식 인증<br>
+            • 위 위젯에서 서버에 먼저 참여하세요<br>
+            • 비밀번호는 저장되지 않습니다
         </div>
         
         <div class="features">
             <div class="feature-item">
-                <strong>🔥 무료 다운로드</strong>
-                모든 플러그인 무료 제공
+                <strong>📥 무료 다운로드</strong>
+                모든 플러그인 무료
             </div>
             <div class="feature-item">
                 <strong>⭐ 리뷰 시스템</strong>
@@ -323,18 +165,12 @@
     
     <script>
         const DISCORD_CLIENT_ID = '1414591036734312499';
-        const REDIRECT_URI = window.location.origin + '/home.html';
+        const REDIRECT_URI = window.location.origin + '/index.html'; // 메인 페이지로 리다이렉트
         
         function discordLogin() {
             const minecraftId = prompt('마인크래프트 아이디를 입력하세요:', 'Player' + Math.floor(Math.random() * 9999));
-            
             if (!minecraftId) {
                 alert('마인크래프트 아이디를 입력해주세요');
-                return;
-            }
-            
-            if (minecraftId.length < 3) {
-                alert('아이디는 최소 3글자 이상이어야 합니다');
                 return;
             }
             
@@ -345,16 +181,11 @@
             window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scopes}&state=${state}`;
         }
         
-        // 이미 로그인되어 있으면 home.html로 리다이렉트
+        // 이미 로그인되어 있으면 메인 페이지로
         const currentUser = localStorage.getItem('currentUser');
         if (currentUser) {
-            window.location.href = 'home.html';
+            window.location.href = 'index.html';
         }
-        
-        // 페이지 로드 시 애니메이션 효과
-        window.addEventListener('load', function() {
-            document.querySelector('.login-container').style.animation = 'slideUp 0.6s ease-out';
-        });
     </script>
 </body>
 </html>
