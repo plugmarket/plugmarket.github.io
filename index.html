@@ -1,11 +1,4 @@
-let plugins={},currentUser=null,currentFilter='all',currentCategory='all',currentSort='popular',selectedRating=0,currentPlugin=null,discordMembers=[];
-const WEBHOOK='https://discord.com/api/webhooks/1425431420158869584/_H7Fr8vnzydAuqVoQ8Sbm5c2wHlb7EL8XXAIadq1waQGaaPCvJYGjhQotyWU4DHY0-zv';
-const DISCORD_CLIENT_ID='1414591036734312499';
-const DISCORD_WIDGET_API='https://discord.com/api/guilds/1420030738346152093/widget.json';
-const REDIRECT_URI=window.location.origin+window.location.pathname;
-const ADMIN_DISCORD_ID='787223885766328340';
-const ADMIN_MINECRAFT_ID='gogaon0821'; // 임시 관리자 (마인크래프트 아이디)
-const initialData={p1:{id:'p1',name:"CookingPlugin",description:"요리 시스템",version:"1.0",type:"free",category:"게임플레이",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/uqe6g4wu4vwlfh46qd9i4/CookingPlugin.jar?rlkey=nrxb0beuwyjbxqq8d9w2oei4&st=sv9nvc3q&dl=1"},p2:{id:'p2',name:"ItemsAdder",description:"커스텀 아이템",version:"1.2",type:"free",category:"커스텀",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/jnqiumuvlm9ibos0amapv/itemsadder-1.2-paper.jar?rlkey=37p1s990yx23j2c6b4j3sjpv6&st=u3c9s9qf&dl=1"},p3:{id:'p3',name:"QuestPlugin",description:"퀘스트 시스템",version:"1.5",type:"free",category:"RPG",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/j7d7lh2skws90d3hqrwa1/QuestPlugin-1.5-paper.jar?rlkey=9h8n0sr4tyem40jb2bemdok6k&st=31siar1m&dl=1"},p4:{id:'p4',name:"RankPlugin",description:"등급 시스템",version:"1.0",type:"free",category:"시스템",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/o3ig4n0gxrlxuz01j1j7r/rankplugin-1.0-paper.jar?rlkey=t699uhu6eck878a6u6y36f8fq&st=i4gpgqga&dl=1"},p5:{id:'p5',name:"RoulettePlugin",description:"룰렛",version:"1.0",type:"free",category:"게임플레이",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/fsrnzk9u7vet81euq3afr/RoulettePlugin-1.0-paper.jar?rlkey=yi40cimkve8lim2cg4isr8n6k&st=qbfrlmyz&dl=1"},p6:{id:'p6',name:"ShopSystem",description:"상점",version:"1.2",type:"free",category:"경제",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/ld31twop0v6v454dhhet0/Shopsystem-1.2-paper.jar?rlkey=we1a2xxv5m25lq1wghj0o1ugf&st=068q0ixb&dl=1"},p7:{id:'p7',name:"SkillSystem",description:"스킬",version:"1.0",type:"free",category:"RPG",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/akw2azo96zgw4pjp1jus2/SkillSystem-1.0-paper.jar?rlkey=m3dxjilfwgm9gt68vpzk9yhlh&st=a5cn74qy&dl=1"},p8:{id:'p8',name:"SpectatorOnDeath",description:"관전",version:"1.0",type:"free",category:"게임플레이",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/xc2fyqs65nuymhhqwzuc3/SpectatorOnDeath-1.0-paper.jar?rlkey=fwmas7lvqek4ej1atni7gwki5&st=sutonbm3&dl=1"},p9:{id:'p9',name:"SwordPlugin",description:"검",version:"1.2",type:"free",category:"커스텀",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/seacbjovms352dw3yyga9/sword-1.2-paper.jar?rlkey=5cdesj2v2ax436ze7905fiifp&st=szgdpnve&dl=1"}};<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -55,7 +48,6 @@ const initialData={p1:{id:'p1',name:"CookingPlugin",description:"요리 시스�
                 <option value="rating">평점순</option>
                 <option value="downloads">다운로드순</option>
             </select>
-            <button class="btn-primary" id="adminAddBtn" onclick="addPlugin()" style="display:none;padding:12px 25px;border-radius:25px;margin-left:auto;background:linear-gradient(135deg,#ef4444,#dc2626)">➕ 플러그인 추가</button>
         </div>
         <div class="plugins-grid" id="pluginsGrid"></div>
     </div>
@@ -133,19 +125,7 @@ function handleOAuthCallback(){
     if(code){
         const state=params.get('state');
         const minecraftId=state?decodeURIComponent(state):'Player'+Math.floor(Math.random()*9999);
-        
-        // Discord ID는 실제로는 OAuth에서 받아와야 하지만, 임시로 마인크래프트 ID 사용
-        // 실제 구현시 백엔드에서 Discord API로 사용자 정보를 받아와야 합니다
-        currentUser={
-            discordCode:code,
-            discordId:null, // 실제로는 Discord API에서 받아온 ID
-            minecraftId:minecraftId,
-            username:minecraftId,
-            loginTime:new Date().toISOString(),
-            downloads:[],
-            reviews:{}
-        };
-        
+        currentUser={discordCode:code,minecraftId:minecraftId,username:minecraftId,loginTime:new Date().toISOString(),downloads:[],reviews:{}};
         localStorage.setItem('currentUser',JSON.stringify(currentUser));
         window.history.replaceState({},document.title,window.location.pathname);
         showUserInfo();
@@ -157,13 +137,6 @@ function handleOAuthCallback(){
 function showUserInfo(){
     document.getElementById('userName').textContent=(currentUser.username||'User')+'님';
     document.getElementById('userIdDisplay').textContent='MC: '+currentUser.minecraftId;
-    
-    // 관리자 배지 추가
-    if(isAdmin()){
-        document.getElementById('userName').innerHTML=(currentUser.username||'User')+'님 <span style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;padding:3px 10px;border-radius:10px;font-size:0.7em;margin-left:8px">👑 관리자</span>';
-        document.getElementById('adminAddBtn').style.display='block';
-    }
-    
     updateUserStats();
 }
 
@@ -182,10 +155,6 @@ window.logout=function(){
         window.location.href='login.html';
     }
 };
-
-function isAdmin(){
-    return currentUser && currentUser.discordId === ADMIN_DISCORD_ID;
-}
 
 function updateUserStats(){
     if(!currentUser)return;
@@ -209,8 +178,7 @@ function renderPlugins(){
         const i=currentUser&&currentUser.downloads&&currentUser.downloads.some(d=>d.pluginId===p.id);
         const c=p.reviews?Object.keys(p.reviews).length:0;
         const s='★'.repeat(Math.round(p.rating||0))+'☆'.repeat(5-Math.round(p.rating||0));
-        const adminButtons=isAdmin()?`<button class="btn btn-secondary" onclick="event.stopPropagation();editPlugin('${p.id}')" style="background:#ef4444;color:white">✏️ 수정</button><button class="btn btn-secondary" onclick="event.stopPropagation();deletePlugin('${p.id}')" style="background:#dc2626;color:white">🗑️ 삭제</button>`:'';
-        return`<div class="plugin-card"onclick="showDetail('${p.id}')"><div style="display:flex;justify-content:space-between"><div><h3 class="plugin-title">${p.name}</h3><span class="plugin-category">${p.category}</span></div><span class="plugin-badge">무료</span></div><p class="plugin-description">${p.description}</p><p class="plugin-version">v${p.version}</p><div class="plugin-rating"><span class="stars">${s}</span><span class="rating-count">${(p.rating||0).toFixed(1)}(${c})</span></div><p class="plugin-downloads">📥 ${p.downloads}회</p>${i?'<div style="background:#10b981;color:white;padding:8px;border-radius:8px;text-align:center;margin:10px 0">✓ 다운로드 완료</div>':''}<div class="plugin-footer"><button class="btn btn-primary"onclick="event.stopPropagation();downloadPlugin('${p.id}')">${i?'재다운':'다운로드'}</button><button class="btn btn-secondary"onclick="event.stopPropagation();showDetail('${p.id}')">상세보기</button>${adminButtons}</div></div>`
+        return`<div class="plugin-card"onclick="showDetail('${p.id}')"><div style="display:flex;justify-content:space-between"><div><h3 class="plugin-title">${p.name}</h3><span class="plugin-category">${p.category}</span></div><span class="plugin-badge">무료</span></div><p class="plugin-description">${p.description}</p><p class="plugin-version">v${p.version}</p><div class="plugin-rating"><span class="stars">${s}</span><span class="rating-count">${(p.rating||0).toFixed(1)}(${c})</span></div><p class="plugin-downloads">📥 ${p.downloads}회</p>${i?'<div style="background:#10b981;color:white;padding:8px;border-radius:8px;text-align:center;margin:10px 0">✓ 다운로드 완료</div>':''}<div class="plugin-footer"><button class="btn btn-primary"onclick="event.stopPropagation();downloadPlugin('${p.id}')">${i?'재다운':'다운로드'}</button><button class="btn btn-secondary"onclick="event.stopPropagation();showDetail('${p.id}')">상세보기</button></div></div>`
     }).join('');
 }
 
@@ -286,77 +254,6 @@ window.showHistory=function(){
 };
 
 window.closeHistoryModal=function(){document.getElementById('historyModal').classList.remove('active')};
-
-// 관리자 전용 기능
-window.editPlugin=function(pid){
-    if(!isAdmin()){alert('관리자 권한이 필요합니다');return}
-    const p=plugins[pid];
-    if(!p)return;
-    const newName=prompt('플러그인 이름:',p.name);
-    if(!newName)return;
-    const newDesc=prompt('설명:',p.description);
-    if(!newDesc)return;
-    const newVersion=prompt('버전:',p.version);
-    if(!newVersion)return;
-    const newUrl=prompt('다운로드 URL:',p.downloadUrl);
-    if(!newUrl)return;
-    
-    p.name=newName;
-    p.description=newDesc;
-    p.version=newVersion;
-    p.downloadUrl=newUrl;
-    
-    saveLocal();
-    renderPlugins();
-    alert('✅ 플러그인이 수정되었습니다');
-    sendDiscord(`**✏️ 플러그인 수정**\n**관리자:** ${currentUser.username}\n**플러그인:** ${newName}\n**시간:** ${new Date().toLocaleString('ko-KR')}`);
-};
-
-window.deletePlugin=function(pid){
-    if(!isAdmin()){alert('관리자 권한이 필요합니다');return}
-    const p=plugins[pid];
-    if(!p)return;
-    if(!confirm(`"${p.name}" 플러그인을 삭제하시겠습니까?`))return;
-    
-    delete plugins[pid];
-    saveLocal();
-    renderPlugins();
-    alert('✅ 플러그인이 삭제되었습니다');
-    sendDiscord(`**🗑️ 플러그인 삭제**\n**관리자:** ${currentUser.username}\n**플러그인:** ${p.name}\n**시간:** ${new Date().toLocaleString('ko-KR')}`);
-};
-
-window.addPlugin=function(){
-    if(!isAdmin()){alert('관리자 권한이 필요합니다');return}
-    const name=prompt('플러그인 이름:');
-    if(!name)return;
-    const desc=prompt('설명:');
-    if(!desc)return;
-    const version=prompt('버전 (예: 1.0):');
-    if(!version)return;
-    const category=prompt('카테고리 (게임플레이/시스템/커스텀/RPG/경제):');
-    if(!category)return;
-    const url=prompt('다운로드 URL:');
-    if(!url)return;
-    
-    const id='p'+Date.now();
-    plugins[id]={
-        id:id,
-        name:name,
-        description:desc,
-        version:version,
-        type:'free',
-        category:category,
-        downloads:0,
-        rating:0,
-        reviews:{},
-        downloadUrl:url
-    };
-    
-    saveLocal();
-    renderPlugins();
-    alert('✅ 플러그인이 추가되었습니다');
-    sendDiscord(`**➕ 플러그인 추가**\n**관리자:** ${currentUser.username}\n**플러그인:** ${name}\n**카테고리:** ${category}\n**시간:** ${new Date().toLocaleString('ko-KR')}`);
-};
 
 document.addEventListener('DOMContentLoaded',init);
     </script>
