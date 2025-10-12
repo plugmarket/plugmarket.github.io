@@ -67,13 +67,9 @@
             width:100%;
             justify-content:center;
         }
-        .discord-btn:hover:not(:disabled){
+        .discord-btn:hover{
             transform:translateY(-3px);
             box-shadow:0 12px 35px rgba(88,101,242,0.5);
-        }
-        .discord-btn:disabled{
-            opacity:0.7;
-            cursor:not-allowed;
         }
         .info-box{
             background:linear-gradient(135deg,#f3f4f6 0%,#e5e7eb 100%);
@@ -141,11 +137,10 @@
         </button>
         
         <div class="info-box">
-            <strong>🔒 Discord 봇 인증 시스템</strong>
-            • Discord로 로그인<br>
-            • #인증 채널에서 !verify 명령어 사용<br>
-            • 봇이 Mojang API로 마크 계정 확인<br>
-            • 본인 소유 계정만 인증 완료
+            <strong>🔒 안전한 인증</strong>
+            • Discord OAuth 2.0 공식 인증<br>
+            • 위 위젯에서 서버에 먼저 참여하세요<br>
+            • 비밀번호는 저장되지 않습니다
         </div>
         
         <div class="features">
@@ -170,45 +165,20 @@
     
     <script>
         const DISCORD_CLIENT_ID = '1414591036734312499';
-        const REDIRECT_URI = 'https://plugmarket.o-r.kr/index.html'; // ⚠️ 실제 배포 URL로 변경
+        const REDIRECT_URI = 'https://plugmarket.o-r.kr/index.html';
         
-        async function discordLogin() {
-            // 로딩 표시
-            const btn = document.querySelector('.discord-btn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span>🔄 Discord로 이동 중...</span>';
-            btn.disabled = true;
-            
-            try {
-                // 인증 코드 생성
-                const verificationCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-                
-                // Discord 인증 전 안내
-                alert(
-                    `🎮 마인크래프트 계정 인증 방법\n\n` +
-                    `1. Discord 로그인 완료 후\n` +
-                    `2. Plugin Store Discord 서버로 이동\n` +
-                    `3. #인증 채널에서 다음 명령어 입력:\n\n` +
-                    `   !verify 마인크래프트아이디 ${verificationCode}\n\n` +
-                    `예시: !verify Steve ${verificationCode}\n\n` +
-                    `✅ 봇이 계정을 확인하고 인증해드립니다!`
-                );
-                
-                // Discord OAuth로 이동 (인증 코드를 state에 포함)
-                const state = encodeURIComponent(JSON.stringify({
-                    verifyCode: verificationCode,
-                    timestamp: Date.now()
-                }));
-                const redirectUri = encodeURIComponent(REDIRECT_URI);
-                const scopes = 'identify';
-                
-                window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scopes}&state=${state}`;
-                
-            } catch (error) {
-                alert('❌ 오류가 발생했습니다: ' + error.message);
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+        function discordLogin() {
+            const minecraftId = prompt('마인크래프트 아이디를 입력하세요:', 'Player' + Math.floor(Math.random() * 9999));
+            if (!minecraftId) {
+                alert('마인크래프트 아이디를 입력해주세요');
+                return;
             }
+            
+            const state = encodeURIComponent(minecraftId);
+            const redirectUri = encodeURIComponent(REDIRECT_URI);
+            const scopes = 'identify';
+            
+            window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scopes}&state=${state}`;
         }
         
         // 이미 로그인되어 있으면 메인 페이지로
