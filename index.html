@@ -321,14 +321,14 @@ window.downloadPlugin=async function(pid){
     if(!currentUser.downloads.some(d=>d.pluginId===pid))currentUser.downloads.push(rec);
     saveLocal();
     const l=document.createElement('a');l.href=p.downloadUrl;l.download=p.name+'.jar';document.body.appendChild(l);l.click();document.body.removeChild(l);
-    localStorage.setItem('currentUser',JSON.stringify(currentUser));
-    updateUserStats();renderPlugins();
-    await sendDiscord(`**📥 다운로드**\n**플러그인:** ${p.name}\n**사용자:** ${currentUser.username}\n**마인크래프트:** ${currentUser.minecraftId}\n**시간:** ${rec.date}\n**총 다운로드:** ${p.downloads}회`);
-    alert('✅ 다운로드가 시작되었습니다!');
-};
-
-window.openReviewModal=function(pid){
+    lowindow.openReviewModal=function(pid){
     currentPlugin=plugins[pid];
+    // 다운로드 여부 확인
+    const isDownloaded=currentUser&&currentUser.downloads&&currentUser.downloads.some(d=>d.pluginId===pid);
+    if(!isDownloaded){
+        alert('❌ 리뷰는 다운로드한 플러그인만 작성할 수 있습니다!');
+        return;
+    }
     const u=currentUser.reviews&&currentUser.reviews[pid];
     if(u){selectedRating=u.rating;document.getElementById('reviewText').value=u.text;document.querySelectorAll('#starRating .star').forEach((s,i)=>{if(i<selectedRating)s.classList.add('active');else s.classList.remove('active')})}else{selectedRating=0;document.getElementById('reviewText').value='';document.querySelectorAll('#starRating .star').forEach(s=>s.classList.remove('active'))}
     closeDetailModal();document.getElementById('reviewModal').classList.add('active');
@@ -338,6 +338,13 @@ window.closeReviewModal=function(){document.getElementById('reviewModal').classL
 
 window.submitReview=async function(){
     if(!currentUser||!currentPlugin)return;
+    // 다운로드 여부 재확인
+    const isDownloaded=currentUser.downloads&&currentUser.downloads.some(d=>d.pluginId===currentPlugin.id);
+    if(!isDownloaded){
+        alert('❌ 리뷰는 다운로드한 플러그인만 작성할 수 있습니다!');
+        closeReviewModal();
+        return;
+    }
     if(selectedRating===0){alert('별점을 선택해주세요');return}
     const t=document.getElementById('reviewText').value.trim();
     if(!t){alert('리뷰 내용을 입력해주세요');return}
@@ -345,7 +352,11 @@ window.submitReview=async function(){
     if(!currentPlugin.reviews)currentPlugin.reviews={};
     currentPlugin.reviews[currentUser.minecraftId]=r;
     const v=Object.values(currentPlugin.reviews);
-    const a=v.reduce((window.showHistory=function(){
+    const a=v.reduce((s,x)=>s+x.rating,0)/v.length;
+    currentPlugin.rating=Math.round(a*10)/10;
+    if(!currentUser.reviews)currentUser.reviews={};
+    currentUser.reviews[currentPlugin.id]=r;
+window.showHistory=function(){
     if(!currentUser)return;
     const b=document.getElementById('historyBody');
     const d=currentUser.downloads||[];
@@ -353,10 +364,7 @@ window.submitReview=async function(){
     document.getElementById('historyModal').classList.add('active');
 };
 
-window.closeHistoryModal=function(){document.getElementById('historyModal').classList.remove('active')};  if(!currentUser)return;
-    const b=document.getElementById('historyBody');
-    const d=currentUser.downloads||[];
-    b.innerHTML=d.length===0?'<p style="text-align:center;color:#999">다운로드 내역이 없습니다</p>':d.map(x=>`<div class="history-item"><h3>${x.window.closeHistoryModal=function(){document.getElementById('historyModal').classList.remove('active')};
+window.closeHistoryModal=function(){document.getElementById('historyModal').classList.remove('active')};
 
 function toggleTheme(){
     const body=document.body;
@@ -367,13 +375,10 @@ function toggleTheme(){
 
 function updateThemeIcon(){
     const toggle=document.querySelector('.theme-toggle');
-    if(document.body.classLloadTheme();
-document.addEventListener('DOMContentLoaded',init);classList.add('dark-mode');
-    }
-    updateThemeIcon();
-}
-
-loadTheme();
+    if(document.body.classList.contains('dark-mode')){
+        toloadTheme();
+document.addEventListener('DOMContentLoaded',init);
+    </script>oadTheme();
 document.addEventListener('DOMContentLoaded',init);iv>`).join('');
     document.getElementById('historyModal').classList.add('active');
 };
