@@ -8,18 +8,20 @@
         *{margin:0;padding:0;box-sizing:border-box}
         body{
             font-family:'Segoe UI',sans-serif;
-            background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            background:#ffffff;
             min-height:100vh;
             display:flex;
             justify-content:center;
             align-items:center;
             padding:20px;
+            padding-bottom:80px;
         }
         .login-container{
-            background:white;
+            background:#ffffff;
             padding:60px 40px;
             border-radius:30px;
-            box-shadow:0 20px 60px rgba(0,0,0,0.3);
+            box-shadow:0 2px 15px rgba(0,0,0,0.1);
+            border:1px solid #e5e7eb;
             max-width:500px;
             width:100%;
             text-align:center;
@@ -104,6 +106,25 @@
             color:#667eea;
             margin-bottom:5px;
         }
+        footer{
+            position:fixed;
+            bottom:0;
+            left:0;
+            width:100%;
+            background:#6b7280;
+            color:white;
+            padding:20px;
+            text-align:center;
+            box-shadow:0 -2px 10px rgba(0,0,0,0.1);
+        }
+        footer a{
+            color:white;
+            text-decoration:none;
+            font-weight:bold;
+        }
+        footer a:hover{
+            text-decoration:underline;
+        }
         @media(max-width:768px){
             .login-container{padding:40px 20px}
             .features{grid-template-columns:1fr}
@@ -162,6 +183,10 @@
             </div>
         </div>
     </div>
+    
+    <footer>
+        <p>대표 고가온 | 이메일: <a href="mailto:gogaon036@gmail.com">gogaon036@gmail.com</a></p>
+    </footer>
     
     <script>
         const DISCORD_CLIENT_ID = '1414591036734312499';
