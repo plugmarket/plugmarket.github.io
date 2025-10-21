@@ -198,7 +198,29 @@
             <div class="modal-footer"><button class="btn btn-primary" onclick="closeHistoryModal()">닫기</button></div>
         </div>
     </div>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+
     <script>
+// Firebase 초기화
+const firebaseConfig = {
+  apiKey: "AIzaSyD0vhmFIW-7pzJXaQfYpXdUEMT4UjhK_us",
+  authDomain: "pluginshop-7de24.firebaseapp.com",
+  databaseURL: "https://pluginshop-7de24-default-rtdb.firebaseio.com",
+  projectId: "pluginshop-7de24",
+  storageBucket: "pluginshop-7de24.firebasestorage.app",
+  messagingSenderId: "917878469153",
+  appId: "1:917878469153:web:dadc0fe64e11bb92176960",
+  measurementId: "G-ENZYNVQ01Y"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const analytics = firebase.analytics();
+
 let plugins={},currentUser=null,currentFilter='all',currentCategory='all',currentSort='popular',selectedRating=0,currentPlugin=null,discordMembers=[];
 const WEBHOOK='https://discord.com/api/webhooks/1425431420158869584/_H7Fr8vnzydAuqVoQ8Sbm5c2wHlb7EL8XXAIadq1waQGaaPCvJYGjhQotyWU4DHY0-zv';
 const DISCORD_CLIENT_ID='1414591036734312499';
@@ -206,16 +228,89 @@ const DISCORD_WIDGET_API='https://discord.com/api/guilds/1420030738346152093/wid
 const REDIRECT_URI=window.location.origin+window.location.pathname;
 const initialData={p1:{id:'p1',name:"CookingPlugin",description:"요리 시스템",version:"1.0",type:"free",category:"게임플레이",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/uqe6g4wu4vwlfh46qd9i4/CookingPlugin.jar?rlkey=nrxb0beuwyjbxqxq8d9w2oei4&st=sv9nvc3q&dl=1"},p2:{id:'p2',name:"ItemsAdder",description:"커스텀 아이템",version:"1.2",type:"free",category:"커스텀",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/jnqiumuvlm9ibos0amapv/itemsadder-1.2-paper.jar?rlkey=37p1s990yx23j2c6b4j3sjpv6&st=u3c9s9qf&dl=1"},p3:{id:'p3',name:"QuestPlugin",description:"퀘스트 시스템",version:"1.5",type:"free",category:"RPG",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/j7d7lh2skws90d3hqrwa1/QuestPlugin-1.5-paper.jar?rlkey=9h8n0sr4tyem40jb2bemdok6k&st=31siar1m&dl=1"},p4:{id:'p4',name:"RankPlugin",description:"등급 시스템",version:"1.0",type:"free",category:"시스템",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/o3ig4n0gxrlxuz01j1j7r/rankplugin-1.0-paper.jar?rlkey=t699uhu6eck878a6u6y36f8fq&st=i4gpgqga&dl=1"},p5:{id:'p5',name:"RoulettePlugin",description:"룰렛",version:"1.0",type:"free",category:"게임플레이",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/fsrnzk9u7vet81euq3afr/RoulettePlugin-1.0-paper.jar?rlkey=yi40cimkve8lim2cg4isr8n6k&st=qbfrlmyz&dl=1"},p6:{id:'p6',name:"ShopSystem",description:"상점",version:"1.2",type:"free",category:"경제",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/ld31twop0v6v454dhhet0/Shopsystem-1.2-paper.jar?rlkey=we1a2xxv5m25lq1wghj0o1ugf&st=068q0ixb&dl=1"},p7:{id:'p7',name:"SkillSystem",description:"스킬",version:"1.0",type:"free",category:"RPG",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/8hl3xexcd5h19urq7hg9g/.zip?rlkey=zhdpub1gs0q6y3hspdjr6a3py&st=855e7qb7&dl=1"},p8:{id:'p8',name:"SpectatorOnDeath",description:"관전",version:"1.0",type:"free",category:"게임플레이",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/xc2fyqs65nuymhhqwzuc3/SpectatorOnDeath-1.0-paper.jar?rlkey=fwmas7lvqek4ej1atni7gwki5&st=sutonbm3&dl=1"},p9:{id:'p9',name:"SwordPlugin",description:"검",version:"1.2",type:"free",category:"커스텀",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/seacbjovms352dw3yyga9/sword-1.2-paper.jar?rlkey=5cdesj2v2ax436ze7905fiifp&st=szgdpnve&dl=1"}};
 
+// Firebase 다운로드 카운트 로드
+async function loadDownloadsFromFirebase(){
+    try{
+        const snapshot = await database.ref('plugins').once('value');
+        const firebaseData = snapshot.val();
+        if(firebaseData){
+            // Firebase 데이터로 다운로드 카운트 업데이트
+            Object.keys(firebaseData).forEach(pluginId => {
+                if(plugins[pluginId]){
+                    plugins[pluginId].downloads = firebaseData[pluginId].downloads || 0;
+                }
+            });
+            console.log('✅ Firebase에서 다운로드 카운트 로드 완료');
+        }else{
+            // Firebase에 데이터가 없으면 초기화
+            await initializeFirebaseData();
+        }
+    }catch(e){
+        console.error('Firebase 로드 실패:', e);
+    }
+}
+
+// Firebase 초기 데이터 설정
+async function initializeFirebaseData(){
+    try{
+        const updates = {};
+        Object.keys(plugins).forEach(pluginId => {
+            updates[`plugins/${pluginId}`] = {
+                name: plugins[pluginId].name,
+                downloads: plugins[pluginId].downloads || 0
+            };
+        });
+        await database.ref().update(updates);
+        console.log('✅ Firebase 초기 데이터 설정 완료');
+    }catch(e){
+        console.error('Firebase 초기화 실패:', e);
+    }
+}
+
+// Firebase에 다운로드 카운트 업데이트
+async function updateDownloadInFirebase(pluginId){
+    try{
+        const pluginRef = database.ref(`plugins/${pluginId}/downloads`);
+        // 트랜잭션을 사용하여 안전하게 증가
+        await pluginRef.transaction((currentValue) => {
+            return (currentValue || 0) + 1;
+        });
+        console.log(`✅ Firebase 업데이트: ${pluginId}`);
+    }catch(e){
+        console.error('Firebase 업데이트 실패:', e);
+    }
+}
+
+// 실시간 동기화 리스너 설정
+function setupFirebaseListeners(){
+    database.ref('plugins').on('value', (snapshot) => {
+        const firebaseData = snapshot.val();
+        if(firebaseData){
+            Object.keys(firebaseData).forEach(pluginId => {
+                if(plugins[pluginId]){
+                    plugins[pluginId].downloads = firebaseData[pluginId].downloads || 0;
+                }
+            });
+            renderPlugins();
+        }
+    });
+}
+
 async function loadDiscordMembers(){try{const res=await fetch(DISCORD_WIDGET_API);const data=await res.json();if(data.members){discordMembers=data.members.map(m=>({id:m.id,username:m.username,discriminator:m.discriminator}));console.log('Discord 멤버 로드:',discordMembers.length+'명')}}catch(e){console.error('Discord API 실패:',e)}}
 function loadLocal(){const s=localStorage.getItem('plugins');plugins=s?JSON.parse(s):initialData}
 function saveLocal(){localStorage.setItem('plugins',JSON.stringify(plugins))}
 async function sendDiscord(msg){try{await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"📥 알림",description:msg,color:6750054,timestamp:new Date().toISOString()}]})})}catch(e){}}
 
-function init(){
+async function init(){
     loadLocal();
     loadDiscordMembers();
     setupListeners();
     handleOAuthCallback();
+    
+    // Firebase에서 다운로드 카운트 로드 및 실시간 동기화 시작
+    await loadDownloadsFromFirebase();
+    setupFirebaseListeners();
+    
     const u=localStorage.getItem('currentUser');
     if(u){
         currentUser=JSON.parse(u);
@@ -313,6 +408,10 @@ window.closeDetailModal=function(){document.getElementById('detailModal').classL
 window.downloadPlugin=async function(pid){
     if(!currentUser){if(confirm('로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?')){window.location.href='login.html'}return}
     const p=plugins[pid];if(!p)return;
+    
+    // Firebase에 다운로드 카운트 업데이트
+    await updateDownloadInFirebase(pid);
+    
     p.downloads++;
     const rec={pluginId:p.id,pluginName:p.name,date:new Date().toLocaleString('ko-KR')};
     if(!currentUser.downloads)currentUser.downloads=[];
