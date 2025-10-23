@@ -417,7 +417,17 @@ window.downloadPlugin=async function(pid){
     if(!currentUser.downloads)currentUser.downloads=[];
     if(!currentUser.downloads.some(d=>d.pluginId===pid))currentUser.downloads.push(rec);
     saveLocal();
-    const l=document.createElement('a');l.href=p.downloadUrl;l.download=p.name+'.jar';document.body.appendChild(l);l.click();document.body.removeChild(l);
+    
+    // 숨겨진 iframe으로 다운로드 처리
+    let iframe=document.getElementById('downloadFrame');
+    if(!iframe){
+        iframe=document.createElement('iframe');
+        iframe.id='downloadFrame';
+        iframe.style.display='none';
+        document.body.appendChild(iframe);
+    }
+    iframe.src=p.downloadUrl;
+    
     localStorage.setItem('currentUser',JSON.stringify(currentUser));
     renderPlugins();
     sendDiscord(`**📥 다운로드**\n**플러그인:** ${p.name}\n**사용자:** ${currentUser.username}(${currentUser.minecraftId})\n**시간:** ${new Date().toLocaleString('ko-KR')}`);
