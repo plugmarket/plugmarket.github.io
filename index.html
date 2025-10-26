@@ -401,14 +401,31 @@ async function handleOAuthCallback(){
             localStorage.setItem('discordId', discordId);
         }
         
+        // 유저 정보를 전체 유저 목록에 저장
+        const allUsers = JSON.parse(localStorage.getItem('allUsers') || '{}');
+        if(!allUsers[minecraftId]) {
+            allUsers[minecraftId] = {
+                minecraftId: minecraftId,
+                actualMcName: actualMcName,
+                discordId: discordId,
+                discordUsername: discordUsername,
+                balance: 0,
+                lastLogin: new Date().toISOString()
+            };
+        } else {
+            allUsers[minecraftId].lastLogin = new Date().toISOString();
+            allUsers[minecraftId].actualMcName = actualMcName;
+        }
+        localStorage.setItem('allUsers', JSON.stringify(allUsers));
+        
         localStorage.setItem('currentUser',JSON.stringify(currentUser));
         window.history.replaceState({},document.title,window.location.pathname);
         showUserInfo();
         renderPlugins();
         
-        // 관리자만 로그 남기기
-        if(discordId === ADMIN_DISCORD_ID) {
-            sendDiscord(`**🔐 관리자 로그인**\n**Discord ID:** ${discordId}\n**Discord Username:** ${discordUsername}\n**마인크래프트:** ${actualMcName}\n**시간:** ${new Date().toLocaleString('ko-KR')}`);
+        // 일반 사용자만 로그 남기기 (관리자는 로그 제외)
+        if(discordId !== ADMIN_DISCORD_ID && discordId) {
+            sendDiscord(`**✅ 로그인**\n**마인크래프트:** ${actualMcName}\n**시간:** ${new Date().toLocaleString('ko-KR')}`);
         }
     }
 }
