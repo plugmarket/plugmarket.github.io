@@ -13,6 +13,7 @@
                 --text-secondary:#666;
                 --border-color:#e5e7eb;
                 --card-bg:#ffffff;
+                --input-bg:#ffffff;
                 --shadow:rgba(0,0,0,0.08);
                 --danger:#ef4444;
                 --success:#10b981;
@@ -25,6 +26,7 @@
                 --text-secondary:#b3b3b3;
                 --border-color:#404040;
                 --card-bg:#2d2d2d;
+                --input-bg:#383838;
                 --shadow:rgba(0,0,0,0.3);
             }
             *{margin:0;padding:0;box-sizing:border-box}
@@ -85,7 +87,10 @@
                 </div>
                 
                 <div class="table-container" style="margin-bottom:30px">
-                    <h2 style="margin-bottom:20px;color:var(--text-primary)">👥 유저 관리</h2>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                        <h2 style="color:var(--text-primary);margin:0">👥 유저 관리</h2>
+                        <button class="btn btn-primary" onclick="showAddUserModal()" style="background:#10b981">+ 유저 추가</button>
+                    </div>
                     <div style="max-height:400px;overflow-y:auto">
                         <table>
                             <thead>
@@ -98,6 +103,25 @@
                             </thead>
                             <tbody id="usersBody"></tbody>
                         </table>
+                    </div>
+                </div>
+                
+                <!-- 유저 추가 모달 -->
+                <div id="addUserModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;justify-content:center;align-items:center">
+                    <div style="background:var(--card-bg);padding:30px;border-radius:15px;max-width:400px;width:90%">
+                        <h3 style="margin-bottom:20px;color:var(--text-primary)">👤 유저 추가</h3>
+                        <div style="margin-bottom:15px">
+                            <label style="display:block;margin-bottom:5px;color:var(--text-primary);font-weight:bold">마인크래프트 ID</label>
+                            <input type="text" id="newMcId" style="width:100%;padding:10px;border:2px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-primary)" placeholder="예: Player123">
+                        </div>
+                        <div style="margin-bottom:15px">
+                            <label style="display:block;margin-bottom:5px;color:var(--text-primary);font-weight:bold">Discord ID (선택)</label>
+                            <input type="text" id="newDiscordId" style="width:100%;padding:10px;border:2px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-primary)" placeholder="예: 123456789012345678">
+                        </div>
+                        <div style="display:flex;gap:10px">
+                            <button class="btn btn-primary" onclick="addNewUser()" style="flex:1">추가</button>
+                            <button class="btn btn-danger" onclick="closeAddUserModal()" style="flex:1">취소</button>
+                        </div>
                     </div>
                 </div>
                 
@@ -204,6 +228,52 @@
             `).join('');
         }
         
+        function showAddUserModal(){
+            document.getElementById('addUserModal').style.display = 'flex';
+        }
+        
+        function closeAddUserModal(){
+            document.getElementById('addUserModal').style.display = 'none';
+            document.getElementById('newMcId').value = '';
+            document.getElementById('newDiscordId').value = '';
+        }
+        
+        async function addNewUser(){
+            const mcId = document.getElementById('newMcId').value.trim();
+            const discordId = document.getElementById('newDiscordId').value.trim();
+            
+            if(!mcId){
+                alert('마인크래프트 ID를 입력해주세요');
+                return;
+            }
+            
+            if(users[mcId]){
+                alert('이미 등록된 유저입니다');
+                return;
+            }
+            
+            users[mcId] = {
+                minecraftId: mcId,
+                discordId: discordId || '',
+                balance: 0,
+                registeredDate: new Date().toISOString()
+            };
+            
+            saveUsers();
+            renderUsersTable();
+            renderStats();
+            
+            // Firebase에 저장
+            try {
+                await database.ref(`users/${mcId}`).set(users[mcId]);
+            } catch(e) {
+                console.log('ℹ️ Firebase 저장 불가');
+            }
+            
+            closeAddUserModal();
+            alert(`✅ ${mcId} 유저 추가 완료!`);
+        }
+        
         async function addMoneyToUser(minecraftId, amount){
             if(!confirm(`${minecraftId}님에게 ${amount.toLocaleString()}원을 지급하시겠습니까?`)) return;
             
@@ -297,9 +367,15 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadTheme();
             
-            if(!checkAdmin()){
+            console.log('관리자 체크 중...');
+            const isAdmin = checkAdmin();
+            console.log('관리자 여부:', isAdmin);
+            
+            if(!isAdmin){
+                console.log('접근 거부');
                 document.getElementById('accessDenied').style.display = 'block';
             } else {
+                console.log('관리자 페이지 표시');
                 document.getElementById('adminContent').style.display = 'block';
                 loadPlugins();
                 loadUsers();
