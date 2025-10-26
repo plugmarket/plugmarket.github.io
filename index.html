@@ -266,12 +266,26 @@ async function loadDownloadsFromFirebase(){
         const firebaseData = snapshot.val();
         if(firebaseData){
             // Firebase 데이터로 다운로드 카운트 업데이트
+            let shouldSave = false;
             Object.keys(firebaseData).forEach(pluginId => {
                 if(plugins[pluginId]){
-                    plugins[pluginId].downloads = firebaseData[pluginId].downloads || 0;
+                    if(firebaseData[pluginId].downloads !== undefined) {
+                        plugins[pluginId].downloads = firebaseData[pluginId].downloads || 0;
+                    }
+                    if(firebaseData[pluginId].price !== undefined) {
+                        plugins[pluginId].price = firebaseData[pluginId].price || 0;
+                        shouldSave = true;
+                    }
+                    if(firebaseData[pluginId].type !== undefined) {
+                        plugins[pluginId].type = firebaseData[pluginId].type || 'free';
+                        shouldSave = true;
+                    }
                 }
             });
-            console.log('✅ Firebase에서 다운로드 카운트 로드 완료');
+            if(shouldSave) {
+                localStorage.setItem('plugins', JSON.stringify(plugins));
+            }
+            console.log('✅ Firebase에서 플러그인 정보 로드 완료');
         }else{
             // Firebase에 데이터가 없으면 초기화
             await initializeFirebaseData();
@@ -289,7 +303,9 @@ async function initializeFirebaseData(){
         Object.keys(plugins).forEach(pluginId => {
             updates[`plugins/${pluginId}`] = {
                 name: plugins[pluginId].name,
-                downloads: plugins[pluginId].downloads || 0
+                downloads: plugins[pluginId].downloads || 0,
+                price: plugins[pluginId].price || 0,
+                type: plugins[pluginId].type || 'free'
             };
         });
         await database.ref().update(updates);
@@ -320,13 +336,36 @@ function setupFirebaseListeners(){
         database.ref('plugins').on('value', (snapshot) => {
             const firebaseData = snapshot.val();
             if(firebaseData && Object.keys(plugins).length > 0){
+                let shouldRender = false;
                 Object.keys(firebaseData).forEach(pluginId => {
                     if(plugins[pluginId]){
-                        plugins[pluginId].downloads = firebaseData[pluginId].downloads || 0;
+                        const newDownloads = firebaseData[pluginId].downloads;
+                        const newPrice = firebaseData[pluginId].price;
+                        const newType = firebaseData[pluginId].type;
+                        
+                        // 값이 변경된 경우에만 업데이트
+                        if(plugins[pluginId].downloads !== newDownloads){
+                            plugins[pluginId].downloads = newDownloads || 0;
+                            shouldRender = true;
+                        }
+                        if(plugins[pluginId].price !== newPrice && newPrice !== undefined){
+                            plugins[pluginId].price = newPrice;
+                            shouldRender = true;
+                        }
+                        if(plugins[pluginId].type !== newType && newType !== undefined){
+                            plugins[pluginId].type = newType;
+                            shouldRender = true;
+                        }
                     }
                 });
-                if(currentUser){
-                    renderPlugins();
+                
+                // 변경사항이 있었고 저장된 플러그인 데이터도 업데이트
+                if(shouldRender){
+                    saveLocal();
+                    if(currentUser){
+                        renderPlugins();
+                        console.log('✅ Firebase에서 플러그인 정보 업데이트 완료');
+                    }
                 }
             }
         });
