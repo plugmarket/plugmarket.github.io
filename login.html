@@ -251,13 +251,20 @@
                 return;
             }
             
-            const discordId = prompt('Discord ID를 입력하세요 (17자리 숫자):', '');
-            if (!discordId) {
-                alert('Discord ID를 입력해주세요');
-                return;
+            // Discord ID 자동 감지를 위해 저장된 값 사용
+            const savedDiscordId = localStorage.getItem('discordId');
+            let discordId = '';
+            
+            if(savedDiscordId) {
+                discordId = savedDiscordId;
+            } else {
+                discordId = prompt('Discord ID를 입력하세요 (처음 로그인 시 한 번만 필요):', '');
+                if(discordId) {
+                    localStorage.setItem('discordId', discordId);
+                }
             }
             
-            const state = encodeURIComponent(JSON.stringify({minecraftId, discordId}));
+            const state = encodeURIComponent(minecraftId);
             const redirectUri = encodeURIComponent(REDIRECT_URI);
             const scopes = 'identify';
             
