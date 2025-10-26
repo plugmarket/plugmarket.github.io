@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plugin Store</title>
+    <style>
+        :root{
+            --bg-primary:#ffffff;
+            --bg-secondary:#ffffff;
+            --bg-tertiary:#f9fafb;
+            --text-primary:#333;
+            --text-secondary:#666;
+            --text-tertiary:#999;
+            --border-color:#e5e7eb;
+            --shadow:rgba(0,0,0,0.08);
+            --shadow-hover:rgba(0,0,0,0.12);
+            --card-bg:#ffffff;
+            --input-bg:#ffffff;
+            --tag-bg:#f3f4f6;
+            --tag-hover:#e5e7eb;
+            --review-bg:#f9fafb;
+            --footer-bg:#6b7280;
+        }
+        body.dark-mode{
+            --bg-primary:#1a1a1a;
+            --bg-secondary:#2d2d2d;
+            --bg-tertiary:#383838;
+            --text-primary:#e5e5e5;
+            --text-secondary:#b3b3b3;
+            --text-tertiary:#808080;
+            --border-color:#404040;
+            --shadow:rgba(0,0,0,0.3);
+            --shadow-hover:rgba(0,0,0,0.5);
+            --card-bg:#2d2d2d;
+            --input-bg:#383838;
+            --tag-bg:#404040;
+            --tag-hover:#4a4a4a;
+            --review-bg:#383838;
+            --footer-bg:#1f1f1f;
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',sans-serif;background:var(--bg-primary);min-height:100vh;padding:20px;padding-bottom:80px;transition:background 0.3s ease}
+        .container{max-width:1400px;margin:0 auto}
+        header{background:var(--bg-secondary);padding:30px;border-radius:20px;box-shadow:0 2px 10px var(--shadow);margin-bottom:30px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;border:1px solid var(--border-color);transition:all 0.3s ease}
+        .header-left h1{color:#667eea;font-size:2.5em;margin-bottom:10px}
+        .subtitle{color:var(--text-secondary);font-size:1.1em}
+        .user-info{text-align:right}
+        .user-name{font-size:1.2em;color:var(--text-primary);margin-bottom:5px}
+        .user-id{color:var(--text-secondary);font-size:0.9em}
+        .user-stats{display:flex;gap:15px;margin-top:10px;font-size:0.9em}
+        .stat-item{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:5px 12px;border-radius:15px}
+        .btn-logout{margin-top:10px;padding:8px 20px;background:#ef4444;color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.9em}
+        .btn-logout:hover{background:#dc2626}
+        .theme-toggle{position:fixed;top:20px;right:20px;background:var(--card-bg);border:2px solid var(--border-color);padding:12px 16px;border-radius:50px;cursor:pointer;font-size:1.5em;box-shadow:0 4px 15px var(--shadow);z-index:1000;transition:all 0.3s ease}
+        .theme-toggle:hover{transform:scale(1.1);box-shadow:0 6px 20px var(--shadow-hover)}
+        .search-section{background:var(--card-bg);padding:20px;border-radius:15px;margin-bottom:20px;box-shadow:0 2px 10px var(--shadow);border:1px solid var(--border-color);transition:all 0.3s ease}
+        .search-bar{display:flex;gap:10px;margin-bottom:15px}
+        .search-input{flex:1;padding:15px;border:2px solid var(--border-color);border-radius:10px;font-size:1em;background:var(--input-bg);color:var(--text-primary);transition:all 0.3s ease}
+        .search-input:focus{outline:none;border-color:#667eea}
+        .btn-search{padding:15px 30px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border:none;border-radius:10px;cursor:pointer;font-size:1em;font-weight:bold}
+        .category-tags{display:flex;gap:10px;flex-wrap:wrap}
+        .category-tag{padding:8px 15px;background:var(--tag-bg);border:none;border-radius:20px;cursor:pointer;font-size:0.9em;color:var(--text-primary);transition:all 0.3s ease}
+        .category-tag:hover{background:var(--tag-hover)}
+        .category-tag.active{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}
+        .filters{display:flex;gap:15px;margin-bottom:30px;flex-wrap:wrap;align-items:center}
+        .filter-btn{background:var(--card-bg);border:1px solid var(--border-color);padding:12px 25px;border-radius:25px;cursor:pointer;font-size:1em;box-shadow:0 2px 8px var(--shadow);color:var(--text-primary);transition:all 0.3s ease}
+        .filter-btn:hover{transform:translateY(-2px);box-shadow:0 3px 10px var(--shadow-hover)}
+        .filter-btn.active{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border:none}
+        .sort-select{padding:12px 20px;border:1px solid var(--border-color);border-radius:25px;background:var(--card-bg);cursor:pointer;font-size:1em;box-shadow:0 2px 8px var(--shadow);color:var(--text-primary);transition:all 0.3s ease}
+        .plugins-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:25px;margin-bottom:30px}
+        .plugin-card{background:var(--card-bg);border-radius:15px;padding:25px;box-shadow:0 2px 10px var(--shadow);border:1px solid var(--border-color);transition:all 0.3s}
+        .plugin-card:hover{transform:translateY(-3px);box-shadow:0 4px 15px var(--shadow-hover)}
+        .plugin-title{font-size:1.5em;color:var(--text-primary);margin-bottom:5px}
+        .plugin-badge{padding:5px 15px;border-radius:20px;font-size:0.85em;font-weight:bold;background:#10b981;color:white}
+        .plugin-category{display:inline-block;padding:3px 10px;background:var(--tag-bg);border-radius:10px;font-size:0.8em;color:var(--text-secondary);margin-bottom:10px}
+        .plugin-description{color:var(--text-secondary);margin-bottom:15px;line-height:1.6}
+        .plugin-version{color:var(--text-tertiary);font-size:0.9em;margin-bottom:15px}
+        .plugin-rating{display:flex;align-items:center;gap:5px;margin-bottom:10px}
+        .stars{color:#fbbf24}
+        .rating-count{color:var(--text-tertiary);font-size:0.9em}
+        .plugin-downloads{color:var(--text-secondary);font-size:0.9em;margin-bottom:15px}
+        .plugin-footer{display:flex;gap:10px}
+        .btn{flex:1;padding:12px;border:none;border-radius:10px;cursor:pointer;font-size:1em;font-weight:bold;transition:all 0.3s}
+        .btn-primary{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}
+        .btn-primary:hover{transform:scale(1.05)}
+        .btn-secondary{background:var(--tag-bg);color:#667eea}
+        .btn-secondary:hover{background:var(--tag-hover)}
+        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;justify-content:center;align-items:center}
+        .modal.active{display:flex}
+        .modal-content{background:var(--card-bg);padding:40px;border-radius:20px;max-width:600px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.15);transition:all 0.3s ease}
+        .modal-header{font-size:1.8em;margin-bottom:20px;color:var(--text-primary)}
+        .modal-body{margin-bottom:20px;line-height:1.8;color:var(--text-secondary)}
+        .modal-footer{display:flex;gap:10px}
+        .form-group{display:flex;flex-direction:column;gap:5px}
+        .form-group label{color:var(--text-primary);font-weight:bold}
+        .form-group textarea{padding:12px;border:2px solid var(--border-color);border-radius:8px;font-size:1em;font-family:inherit;background:var(--input-bg);color:var(--text-primary);transition:all 0.3s ease}
+        .form-group textarea:focus{outline:none;border-color:#667eea}
+        .star-rating{display:flex;gap:5px;font-size:2em}
+        .star{cursor:pointer;color:#d1d5db}
+        .star:hover,.star.active{color:#fbbf24}
+        .reviews-section{margin-top:20px;padding-top:20px;border-top:2px solid var(--border-color)}
+        .review-item{background:var(--review-bg);padding:15px;border-radius:10px;margin-bottom:15px}
+        .review-header{display:flex;justify-content:space-between;margin-bottom:10px}
+        .review-author{font-weight:bold;color:var(--text-primary)}
+        .review-date{color:var(--text-tertiary);font-size:0.9em}
+        .review-text{color:var(--text-secondary);line-height:1.6}
+        .history-btn{position:fixed;bottom:90px;right:30px;background:var(--card-bg);padding:15px 20px;border-radius:30px;box-shadow:0 2px 15px var(--shadow);cursor:pointer;z-index:100;font-weight:bold;color:#667eea;border:1px solid var(--border-color);transition:all 0.3s ease}
+        .history-item{background:var(--review-bg);padding:20px;border-radius:10px;margin-bottom:15px;border-left:4px solid #667eea}
+        footer{position:fixed;bottom:0;left:0;width:100%;background:var(--footer-bg);color:white;padding:20px;text-align:center;box-shadow:0 -2px 10px rgba(0,0,0,0.1);transition:all 0.3s ease}
+        @media(max-width:768px){.plugins-grid{grid-template-columns:1fr}header{flex-direction:column;text-align:center}.theme-toggle{top:10px;right:10px;padding:10px 14px}}
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()" title="테마 전환">🌓</button>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>🎮 Plugin Store</h1>
+                <p class="subtitle">마인크래프트 플러그인 스토어</p>
+            </div>
+            <div class="user-info" id="userInfo">
+                <p class="user-name" id="userName"></p>
+                <p class="user-id" id="userIdDisplay"></p>
+                <div class="user-stats">
+                    <span class="stat-item">📥 <span id="downloadCount">0</span>개</span>
+                    <span class="stat-item">⭐ <span id="avgRating">0.0</span></span>
+                </div>
+                <button class="btn-logout" onclick="logout()">로그아웃</button>
+            </div>
+        </header>
+        <div class="search-section">
+            <div class="search-bar">
+                <input type="text" class="search-input" id="searchInput" placeholder="검색...">
+                <button class="btn-search" onclick="searchPlugins()">🔍</button>
+            </div>
+            <div class="category-tags">
+                <button class="category-tag active" data-category="all">전체</button>
+                <button class="category-tag" data-category="게임플레이">게임플레이</button>
+                <button class="category-tag" data-category="시스템">시스템</button>
+                <button class="category-tag" data-category="커스텀">커스텀</button>
+                <button class="category-tag" data-category="RPG">RPG</button>
+                <button class="category-tag" data-category="경제">경제</button>
+            </div>
+        </div>
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">전체</button>
+            <button class="filter-btn" data-filter="free">무료</button>
+            <button class="filter-btn" data-filter="downloaded">다운로드함</button>
+            <select class="sort-select" id="sortSelect">
+                <option value="popular">인기순</option>
+                <option value="rating">평점순</option>
+                <option value="downloads">다운로드순</option>
+            </select>
+        </div>
+        <div class="plugins-grid" id="pluginsGrid"></div>
+    </div>
+    <div class="history-btn" id="historyBtn" onclick="showHistory()">📜</div>
+    <footer>
+        <p>대표 고가온 | 이메일: <a href="mailto:gogaon036@gmail.com">gogaon036@gmail.com</a></p>
+    </footer>
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <h2 class="modal-header" id="modalTitle"></h2>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDetailModal()">닫기</button>
+                <button class="btn btn-primary" id="modalAction"></button>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="reviewModal">
+        <div class="modal-content">
+            <h2 class="modal-header">⭐ 리뷰 작성</h2>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>평점</label>
+                    <div class="star-rating" id="starRating">
+                        <span class="star" data-rating="1">★</span>
+                        <span class="star" data-rating="2">★</span>
+                        <span class="star" data-rating="3">★</span>
+                        <span class="star" data-rating="4">★</span>
+                        <span class="star" data-rating="5">★</span>
+                    </div>
+                </div>
+                <div class="form-group"><label>리뷰</label><textarea id="reviewText" rows="5"></textarea></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeReviewModal()">취소</button>
+                <button class="btn btn-primary" onclick="submitReview()">등록</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <h2 class="modal-header">📜 다운로드 내역</h2>
+            <div class="modal-body" id="historyBody"></div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="closeHistoryModal()">닫기</button></div>
+        </div>
+    </div>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+
+    <script>
+// Firebase 초기화
+const firebaseConfig = {
+  apiKey: "AIzaSyB_FsD_GqnENdMGeuzH5Q8tICxn_fgu7OQ",
+  authDomain: "plugmarketdb.firebaseapp.com",
+  databaseURL: "https://plugmarketdb-default-rtdb.firebaseio.com",
+  projectId: "plugmarketdb",
+  storageBucket: "plugmarketdb.firebasestorage.app",
+  messagingSenderId: "142551495005",
+  appId: "1:142551495005:web:6b2b02b9ea53b4198138b4",
+  measurementId: "G-3YMWZPCFWQ"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const analytics = firebase.analytics();
+
+let plugins={},currentUser=null,currentFilter='all',currentCategory='all',currentSort='popular',selectedRating=0,currentPlugin=null,discordMembers=[];
+const WEBHOOK='https://discord.com/api/webhooks/1425431420158869584/_H7Fr8vnzydAuqVoQ8Sbm5c2wHlb7EL8XXAIadq1waQGaaPCvJYGjhQotyWU4DHY0-zv';
+const DISCORD_CLIENT_ID='1414591036734312499';
+const DISCORD_WIDGET_API='https://discord.com/api/guilds/1420030738346152093/widget.json';
+const REDIRECT_URI=window.location.origin+window.location.pathname;
+const ADMIN_DISCORD_ID='787223885766328340';
+const MOJANG_API='https://api.mojang.com/users/profiles/minecraft/';
+const initialData={p1:{id:'p1',name:"CookingPlugin",description:"요리 시스템",version:"1.0",type:"free",category:"게임플레이",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/uqe6g4wu4vwlfh46qd9i4/CookingPlugin.jar?rlkey=nrxb0beuwyjbxqxq8d9w2oei4&st=sv9nvc3q&dl=1"},p2:{id:'p2',name:"ItemsAdder",description:"커스텀 아이템",version:"1.2",type:"free",category:"커스텀",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/jnqiumuvlm9ibos0amapv/itemsadder-1.2-paper.jar?rlkey=37p1s990yx23j2c6b4j3sjpv6&st=u3c9s9qf&dl=1"},p3:{id:'p3',name:"QuestPlugin",description:"퀘스트 시스템",version:"1.5",type:"free",category:"RPG",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/j7d7lh2skws90d3hqrwa1/QuestPlugin-1.5-paper.jar?rlkey=9h8n0sr4tyem40jb2bemdok6k&st=31siar1m&dl=1"},p4:{id:'p4',name:"RankPlugin",description:"등급 시스템",version:"1.0",type:"free",category:"시스템",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/o3ig4n0gxrlxuz01j1j7r/rankplugin-1.0-paper.jar?rlkey=t699uhu6eck878a6u6y36f8fq&st=i4gpgqga&dl=1"},p5:{id:'p5',name:"RoulettePlugin",description:"룰렛",version:"1.0",type:"free",category:"게임플레이",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/fsrnzk9u7vet81euq3afr/RoulettePlugin-1.0-paper.jar?rlkey=yi40cimkve8lim2cg4isr8n6k&st=qbfrlmyz&dl=1"},p6:{id:'p6',name:"ShopSystem",description:"상점",version:"1.2",type:"free",category:"경제",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/ld31twop0v6v454dhhet0/Shopsystem-1.2-paper.jar?rlkey=we1a2xxv5m25lq1wghj0o1ugf&st=068q0ixb&dl=1"},p7:{id:'p7',name:"SkillSystem",description:"스킬",version:"1.0",type:"free",category:"RPG",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/8hl3xexcd5h19urq7hg9g/.zip?rlkey=zhdpub1gs0q6y3hspdjr6a3py&st=855e7qb7&dl=1"},p8:{id:'p8',name:"SpectatorOnDeath",description:"관전",version:"1.0",type:"free",category:"게임플레이",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/xc2fyqs65nuymhhqwzuc3/SpectatorOnDeath-1.0-paper.jar?rlkey=fwmas7lvqek4ej1atni7gwki5&st=sutonbm3&dl=1"},p9:{id:'p9',name:"SwordPlugin",description:"검",version:"1.2",type:"free",category:"커스텀",downloads:0,rating:0,reviews:{},downloadUrl:"https://www.dropbox.com/scl/fi/seacbjovms352dw3yyga9/sword-1.2-paper.jar?rlkey=5cdesj2v2ax436ze7905fiifp&st=szgdpnve&dl=1"}};
+
+// Firebase 다운로드 카운트 로드
+async function loadDownloadsFromFirebase(){
+    try{
+        const snapshot = await database.ref('plugins').once('value');
+        const firebaseData = snapshot.val();
+        if(firebaseData){
+            // Firebase 데이터로 다운로드 카운트 업데이트
+            Object.keys(firebaseData).forEach(pluginId => {
+                if(plugins[pluginId]){
+                    plugins[pluginId].downloads = firebaseData[pluginId].downloads || 0;
+                }
+            });
+            console.log('✅ Firebase에서 다운로드 카운트 로드 완료');
+        }else{
+            // Firebase에 데이터가 없으면 초기화
+            await initializeFirebaseData();
+        }
+    }catch(e){
+        console.error('Firebase 로드 실패:', e);
+    }
+}
+
+// Firebase 초기 데이터 설정
+async function initializeFirebaseData(){
+    try{
+        const updates = {};
+        Object.keys(plugins).forEach(pluginId => {
+            updates[`plugins/${pluginId}`] = {
+                name: plugins[pluginId].name,
+                downloads: plugins[pluginId].downloads || 0
+            };
+        });
+        await database.ref().update(updates);
+        console.log('✅ Firebase 초기 데이터 설정 완료');
+    }catch(e){
+        console.error('Firebase 초기화 실패:', e);
+    }
+}
+
+// Firebase에 다운로드 카운트 업데이트
+async function updateDownloadInFirebase(pluginId){
+    try{
+        const pluginRef = database.ref(`plugins/${pluginId}/downloads`);
+        // 트랜잭션을 사용하여 안전하게 증가
+        await pluginRef.transaction((currentValue) => {
+            return (currentValue || 0) + 1;
+        });
+        console.log(`✅ Firebase 업데이트: ${pluginId}`);
+    }catch(e){
+        console.error('Firebase 업데이트 실패:', e);
+    }
+}
+
+// 실시간 동기화 리스너 설정
+function setupFirebaseListeners(){
+    database.ref('plugins').on('value', (snapshot) => {
+        const firebaseData = snapshot.val();
+        if(firebaseData && Object.keys(plugins).length > 0){
+            Object.keys(firebaseData).forEach(pluginId => {
+                if(plugins[pluginId]){
+                    plugins[pluginId].downloads = firebaseData[pluginId].downloads || 0;
+                }
+            });
+            if(currentUser){
+                renderPlugins();
+            }
+        }
+    });
+}
+
+async function loadDiscordMembers(){try{const res=await fetch(DISCORD_WIDGET_API);const data=await res.json();if(data.members){discordMembers=data.members.map(m=>({id:m.id,username:m.username,discriminator:m.discriminator}));console.log('Discord 멤버 로드:',discordMembers.length+'명')}}catch(e){console.error('Discord API 실패:',e)}}
+function loadLocal(){
+    const s=localStorage.getItem('plugins');
+    if(s){
+        try{
+            plugins=JSON.parse(s);
+            console.log('✅ Loaded plugins from localStorage:', Object.keys(plugins).length);
+        }catch(e){
+            console.error('Error parsing localStorage:', e);
+            plugins={...initialData};
+        }
+    }else{
+        plugins={...initialData};
+        saveLocal();
+        console.log('✅ Initialized plugins with default data');
+    }
+}
+function saveLocal(){localStorage.setItem('plugins',JSON.stringify(plugins))}
+async function sendDiscord(msg){try{await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"📥 알림",description:msg,color:6750054,timestamp:new Date().toISOString()}]})})}catch(e){}}
+
+async function init(){
+    loadLocal();
+    loadDiscordMembers();
+    setupListeners();
+    handleOAuthCallback();
+    
+    // Firebase에서 다운로드 카운트 로드 및 실시간 동기화 시작
+    await loadDownloadsFromFirebase();
+    setupFirebaseListeners();
+    
+    const u=localStorage.getItem('currentUser');
+    if(u){
+        currentUser=JSON.parse(u);
+        showUserInfo();
+        renderPlugins();
+    }else{
+        window.location.href='login.html';
+    }
+}
+
+async function handleOAuthCallback(){
+    const params=new URLSearchParams(window.location.search);
+    const code=params.get('code');
+    if(code){
+        const state=params.get('state');
+        let minecraftId = 'Player' + Math.floor(Math.random() * 9999);
+        let discordId = '';
+        
+        // State에서 데이터 파싱
+        if(state) {
+            try {
+                const stateData = JSON.parse(decodeURIComponent(state));
+                minecraftId = stateData.minecraftId || minecraftId;
+                discordId = stateData.discordId || '';
+            } catch(e) {
+                minecraftId = decodeURIComponent(state);
+            }
+        }
+        
+        // Minecraft 실제 닉네임 가져오기
+        let actualMcName = minecraftId;
+        try {
+            const mcResponse = await fetch(MOJANG_API + minecraftId);
+            if(mcResponse.ok) {
+                const mcData = await mcResponse.json();
+                actualMcName = mcData.name;
+            }
+        } catch(e) {
+            console.log('Minecraft API 호출 실패, 입력값 사용');
+        }
+        
+        currentUser={
+            discordCode:code,
+            discordId:discordId,
+            minecraftId:minecraftId,
+            actualMcName:actualMcName,
+            username:actualMcName,
+            loginTime:new Date().toISOString(),
+            downloads:[],
+            reviews:{}
+        };
+        
+        localStorage.setItem('currentUser',JSON.stringify(currentUser));
+        window.history.replaceState({},document.title,window.location.pathname);
+        showUserInfo();
+        renderPlugins();
+        
+        // 관리자만 로그 남기기
+        if(discordId === ADMIN_DISCORD_ID) {
+            sendDiscord(`**🔐 관리자 로그인**\n**Discord ID:** ${discordId}\n**마인크래프트:** ${actualMcName}\n**시간:** ${new Date().toLocaleString('ko-KR')}`);
+        }
+    }
+}
+
+function showUserInfo(){
+    const displayName = currentUser.actualMcName || currentUser.username || 'User';
+    document.getElementById('userName').textContent=displayName+'님';
+    document.getElementById('userIdDisplay').textContent='MC: '+displayName;
+    updateUserStats();
+    
+    // 관리자 버튼 추가 (관리자인 경우)
+    const isAdmin = checkAdmin();
+    if(isAdmin && !document.getElementById('adminBtn')) {
+        const adminBtn = document.createElement('button');
+        adminBtn.id = 'adminBtn';
+        adminBtn.className = 'btn-logout';
+        adminBtn.style.marginTop = '10px';
+        adminBtn.textContent = '⚙️ 관리 툴';
+        adminBtn.onclick = () => window.location.href = 'admin.html';
+        document.querySelector('.user-info').appendChild(adminBtn);
+    }
+}
+
+function checkAdmin(){
+    // Discord ID로 관리자 체크 (현재는 간단한 구현)
+    // 실제로는 Discord API로 확인해야 함
+    return currentUser && currentUser.discordId === ADMIN_DISCORD_ID;
+}
+
+function setupListeners(){
+    document.querySelectorAll('.category-tag').forEach(t=>t.addEventListener('click',function(){document.querySelectorAll('.category-tag').forEach(x=>x.classList.remove('active'));this.classList.add('active');currentCategory=this.dataset.category;renderPlugins()}));
+    document.querySelectorAll('.filter-btn').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active'));this.classList.add('active');currentFilter=this.dataset.filter;renderPlugins()}));
+    document.getElementById('sortSelect').addEventListener('change',function(){currentSort=this.value;renderPlugins()});
+    document.getElementById('searchInput').addEventListener('keypress',function(e){if(e.key==='Enter')searchPlugins()});
+    document.querySelectorAll('#starRating .star').forEach(s=>s.addEventListener('click',function(){selectedRating=parseInt(this.dataset.rating);document.querySelectorAll('#starRating .star').forEach((x,i)=>{if(i<selectedRating)x.classList.add('active');else x.classList.remove('active')})}));
+}
+
+function setupPluginCardListeners(){
+    document.querySelectorAll('.btn[data-action="download"]').forEach(btn=>{
+        btn.addEventListener('click',function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            const pluginId=this.dataset.pluginId;
+            downloadPlugin(pluginId);
+        });
+    });
+    document.querySelectorAll('.btn[data-action="detail"]').forEach(btn=>{
+        btn.addEventListener('click',function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            const pluginId=this.dataset.pluginId;
+            showDetail(pluginId);
+        });
+    });
+}
+
+window.logout=function(){
+    if(confirm('로그아웃 하시겠습니까?')){
+        currentUser=null;
+        localStorage.removeItem('currentUser');
+        window.location.href='login.html';
+    }
+};
+
+function updateUserStats(){
+    if(!currentUser)return;
+    const d=currentUser.downloads?currentUser.downloads.length:0;
+    const r=currentUser.reviews?Object.values(currentUser.reviews):[];
+    const a=r.length>0?(r.reduce((s,x)=>s+x.rating,0)/r.length).toFixed(1):'0.0';
+    document.getElementById('downloadCount').textContent=d;
+    document.getElementById('avgRating').textContent=a;
+}
+
+function renderPlugins(){
+    const g=document.getElementById('pluginsGrid');
+    if(!g) return;
+    let l=Object.values(plugins);
+    if(!l || l.length === 0){
+        console.log('No plugins to render');
+        return;
+    }
+    if(currentCategory!=='all')l=l.filter(p=>p.category===currentCategory);
+    if(currentFilter==='free')l=l.filter(p=>p.type==='free');
+    else if(currentFilter==='downloaded'&&currentUser)l=l.filter(p=>currentUser.downloads&&currentUser.downloads.some(d=>d.pluginId===p.id));
+    const t=document.getElementById('searchInput').value.toLowerCase();
+    if(t)l=l.filter(p=>p.name.toLowerCase().includes(t));
+    l.sort((a,b)=>{if(currentSort==='rating')return(b.rating||0)-(a.rating||0);if(currentSort==='downloads')return b.downloads-a.downloads;return(b.downloads*(b.rating||0))-(a.downloads*(a.rating||0))});
+    g.innerHTML=l.map(p=>{
+        const i=currentUser&&currentUser.downloads&&currentUser.downloads.some(d=>d.pluginId===p.id);
+        const c=p.reviews?Object.keys(p.reviews).length:0;
+        const s='★'.repeat(Math.round(p.rating||0))+'☆'.repeat(5-Math.round(p.rating||0));
+        return`<div class="plugin-card"><div style="display:flex;justify-content:space-between"><div><h3 class="plugin-title">${p.name}</h3><span class="plugin-category">${p.category}</span></div><span class="plugin-badge">무료</span></div><p class="plugin-description">${p.description}</p><p class="plugin-version">v${p.version}</p><div class="plugin-rating"><span class="stars">${s}</span><span class="rating-count">${(p.rating||0).toFixed(1)}(${c})</span></div><p class="plugin-downloads">📥 ${p.downloads}회</p>${i?'<div style="background:#10b981;color:white;padding:8px;border-radius:8px;text-align:center;margin:10px 0">✓ 다운로드 완료</div>':''}<div class="plugin-footer"><button class="btn btn-primary" data-plugin-id="${p.id}" data-action="download">${i?'재다운':'다운로드'}</button><button class="btn btn-secondary" data-plugin-id="${p.id}" data-action="detail">상세보기</button></div></div>`
+    }).join('');
+    setupPluginCardListeners();
+}
+
+window.searchPlugins=function(){renderPlugins()};
+
+window.showDetail=function(pid){
+    currentPlugin=plugins[pid];
+    if(!currentPlugin)return;
+    const i=currentUser&&currentUser.downloads&&currentUser.downloads.some(d=>d.pluginId===pid);
+    const u=currentUser&&currentUser.reviews&&currentUser.reviews[pid];
+    document.getElementById('modalTitle').textContent=currentPlugin.name;
+    const r=currentPlugin.reviews?Object.values(currentPlugin.reviews):[];
+    let h='<div class="reviews-section"><h3>📝 리뷰('+r.length+')</h3>';
+    r.forEach(x=>{const s='★'.repeat(x.rating)+'☆'.repeat(5-x.rating);h+=`<div class="review-item"><div class="review-header"><span class="review-author">${x.author}</span><span class="stars">${s}</span></div><p class="review-text">${x.text}</p><span class="review-date">${x.date}</span></div>`});
+    h+='</div>';
+    const rating=currentPlugin.rating||0;
+    document.getElementById('modalBody').innerHTML=`<p><strong>카테고리:</strong> ${currentPlugin.category}</p><p><strong>버전:</strong> v${currentPlugin.version}</p><p><strong>평점:</strong> ${rating.toFixed(1)}/5.0</p><p><strong>다운로드:</strong> ${currentPlugin.downloads}회</p><p style="margin-top:15px">${currentPlugin.description}</p>${h}`;
+    const b=document.getElementById('modalAction');
+    if(i){b.textContent=u?'리뷰 수정':'리뷰 작성';b.onclick=()=>openReviewModal(pid)}else{b.textContent='다운로드';b.onclick=()=>{downloadPlugin(pid);closeDetailModal()}}
+    document.getElementById('detailModal').classList.add('active');
+};
+
+window.closeDetailModal=function(){document.getElementById('detailModal').classList.remove('active')};
+
+window.downloadPlugin=async function(pid){
+    if(!currentUser){if(confirm('로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?')){window.location.href='login.html'}return}
+    const p=plugins[pid];if(!p)return;
+    
+    // Firebase에 다운로드 카운트 업데이트
+    await updateDownloadInFirebase(pid);
+    
+    p.downloads++;
+    const rec={pluginId:p.id,pluginName:p.name,date:new Date().toLocaleString('ko-KR')};
+    if(!currentUser.downloads)currentUser.downloads=[];
+    if(!currentUser.downloads.some(d=>d.pluginId===pid))currentUser.downloads.push(rec);
+    saveLocal();
+    
+    // 숨겨진 iframe으로 다운로드 처리
+    let iframe=document.getElementById('downloadFrame');
+    if(!iframe){
+        iframe=document.createElement('iframe');
+        iframe.id='downloadFrame';
+        iframe.style.display='none';
+        document.body.appendChild(iframe);
+    }
+    iframe.src=p.downloadUrl;
+    
+    localStorage.setItem('currentUser',JSON.stringify(currentUser));
+    renderPlugins();
+    // 일반 사용자 다운로드 웹훅 제거 (관리자만 로그)
+};
+
+window.openReviewModal=function(pid){
+    currentPlugin=plugins[pid];
+    const isDownloaded=currentUser&&currentUser.downloads&&currentUser.downloads.some(d=>d.pluginId===pid);
+    if(!isDownloaded){
+        alert('❌ 리뷰는 다운로드한 플러그인만 작성할 수 있습니다!');
+        return;
+    }
+    const u=currentUser.reviews&&currentUser.reviews[pid];
+    if(u){selectedRating=u.rating;document.getElementById('reviewText').value=u.text;document.querySelectorAll('#starRating .star').forEach((s,i)=>{if(i<selectedRating)s.classList.add('active');else s.classList.remove('active')})}else{selectedRating=0;document.getElementById('reviewText').value='';document.querySelectorAll('#starRating .star').forEach(s=>s.classList.remove('active'))}
+    closeDetailModal();document.getElementById('reviewModal').classList.add('active');
+};
+
+window.closeReviewModal=function(){document.getElementById('reviewModal').classList.remove('active')};
+
+window.submitReview=async function(){
+    if(!currentUser||!currentPlugin)return;
+    const isDownloaded=currentUser.downloads&&currentUser.downloads.some(d=>d.pluginId===currentPlugin.id);
+    if(!isDownloaded){
+        alert('❌ 리뷰는 다운로드한 플러그인만 작성할 수 있습니다!');
+        closeReviewModal();
+        return;
+    }
+    if(selectedRating===0){alert('별점을 선택해주세요');return}
+    const t=document.getElementById('reviewText').value.trim();
+    if(!t){alert('리뷰 내용을 입력해주세요');return}
+    const r={author:currentUser.username,rating:selectedRating,text:t,date:new Date().toLocaleString('ko-KR')};
+    if(!currentPlugin.reviews)currentPlugin.reviews={};
+    currentPlugin.reviews[currentUser.minecraftId]=r;
+    const v=Object.values(currentPlugin.reviews);
+    const a=v.reduce((s,x)=>s+x.rating,0)/v.length;
+    currentPlugin.rating=Math.round(a*10)/10;
+    if(!currentUser.reviews)currentUser.reviews={};
+    currentUser.reviews[currentPlugin.id]=r;
+    saveLocal();
+    localStorage.setItem('currentUser',JSON.stringify(currentUser));
+    closeReviewModal();
+    alert('리뷰가 등록되었습니다!');
+    renderPlugins();
+    // 일반 사용자 리뷰 웹훅 제거 (관리자만 로그)
+};
+
+window.showHistory=function(){
+    if(!currentUser)return;
+    const b=document.getElementById('historyBody');
+    const d=currentUser.downloads||[];
+    b.innerHTML=d.length===0?'<p style="text-align:center;color:#999">다운로드 내역이 없습니다</p>':d.map(x=>`<div class="history-item"><h3>${x.pluginName}</h3><p>${x.date}</p></div>`).join('');
+    document.getElementById('historyModal').classList.add('active');
+};
+
+window.closeHistoryModal=function(){document.getElementById('historyModal').classList.remove('active')};
+
+function toggleTheme(){
+    const body=document.body;
+    const isDark=body.classList.toggle('dark-mode');
+    localStorage.setItem('theme',isDark?'dark':'light');
+    updateThemeIcon();
+}
+
+function updateThemeIcon(){
+    const toggle=document.querySelector('.theme-toggle');
+    if(document.body.classList.contains('dark-mode')){
+        toggle.textContent='☀️';
+    }else{
+        toggle.textContent='🌓';
+    }
+}
+
+function loadTheme(){
+    const savedTheme=localStorage.getItem('theme');
+    if(savedTheme==='dark'){
+        document.body.classList.add('dark-mode');
+    }
+    updateThemeIcon();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+    loadTheme();
+    init();
+});
+    </script>
+</body>
+</html>
