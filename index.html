@@ -123,6 +123,7 @@
                 <p class="user-name" id="userName"></p>
                 <p class="user-id" id="userIdDisplay"></p>
                 <div class="user-stats">
+                    <span class="stat-item">💰 <span id="userBalance">0</span>원</span>
                     <span class="stat-item">📥 <span id="downloadCount">0</span>개</span>
                     <span class="stat-item">⭐ <span id="avgRating">0.0</span></span>
                 </div>
@@ -339,6 +340,8 @@ async function init(){
     const u=localStorage.getItem('currentUser');
     if(u){
         currentUser=JSON.parse(u);
+        // 잔액 즉시 업데이트
+        updateUserBalance();
         showUserInfo();
         renderPlugins();
     }else{
@@ -435,6 +438,7 @@ function showUserInfo(){
     document.getElementById('userName').textContent=displayName+'님';
     document.getElementById('userIdDisplay').textContent='MC: '+displayName;
     updateUserStats();
+    updateUserBalance();
     
     // 관리자 버튼 추가 (관리자인 경우)
     const isAdmin = checkAdmin();
@@ -446,6 +450,16 @@ function showUserInfo(){
         adminBtn.textContent = '⚙️ 관리 툴';
         adminBtn.onclick = () => window.location.href = 'admin.html';
         document.querySelector('.user-info').appendChild(adminBtn);
+    }
+}
+
+function updateUserBalance(){
+    if(!currentUser) return;
+    const allUsers = JSON.parse(localStorage.getItem('allUsers') || '{}');
+    const userBalance = allUsers[currentUser.minecraftId]?.balance || 0;
+    const balanceElement = document.getElementById('userBalance');
+    if(balanceElement) {
+        balanceElement.textContent = userBalance.toLocaleString();
     }
 }
 
