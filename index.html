@@ -202,6 +202,30 @@
             <div class="modal-footer"><button class="btn btn-primary" onclick="closeHistoryModal()">닫기</button></div>
         </div>
     </div>
+    <div class="modal" id="chargeModal">
+        <div class="modal-content">
+            <h2 class="modal-header" style="color:#667eea">💰 계좌 충전</h2>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label style="color:var(--text-primary);font-weight:bold">입금 시 사용할 이름</label>
+                    <input type="text" id="chargeName" placeholder="홍길동" style="width:100%;padding:12px;border:2px solid var(--border-color);border-radius:8px;font-size:1em;background:var(--input-bg);color:var(--text-primary);transition:all 0.3s ease" value="">
+                </div>
+                <div class="form-group" style="margin-top:15px">
+                    <label style="color:var(--text-primary);font-weight:bold">충전 금액(원)</label>
+                    <input type="number" id="chargeAmount" placeholder="10000" min="0" style="width:100%;padding:12px;border:2px solid var(--border-color);border-radius:8px;font-size:1em;background:var(--input-bg);color:var(--text-primary);transition:all 0.3s ease" value="">
+                </div>
+                <div style="background:#e3f2fd;padding:15px;border-radius:10px;margin-top:20px;border-left:4px solid #667eea">
+                    <p style="margin-bottom:10px;font-weight:bold;color:var(--text-primary)">💳 입금 계좌 정보</p>
+                    <p style="margin:0;color:var(--text-secondary)">국민은행: 7018-9074-0985-68</p>
+                    <p style="margin:5px 0 0 0;font-size:0.9em;color:var(--text-tertiary)">⚠️ 입금 시 위 이름으로 입금해주세요</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeChargeModal()">취소</button>
+                <button class="btn btn-primary" onclick="submitChargeRequest()">충전 요청</button>
+            </div>
+        </div>
+    </div>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -350,9 +374,34 @@ function loadLocal(){
 function saveLocal(){localStorage.setItem('plugins',JSON.stringify(plugins))}
 async function sendDiscord(msg){try{await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"📥 알림",description:msg,color:6750054,timestamp:new Date().toISOString()}]})})}catch(e){}}
 
-async function requestCharge(){
+function requestCharge(){
     if(!currentUser){
         alert('로그인이 필요합니다.');
+        return;
+    }
+    
+    // 마인크래프트 닉네임을 기본값으로 설정
+    const mcName = currentUser.actualMcName || currentUser.username || '';
+    document.getElementById('chargeName').value = mcName;
+    document.getElementById('chargeAmount').value = '';
+    document.getElementById('chargeModal').classList.add('active');
+}
+
+function closeChargeModal(){
+    document.getElementById('chargeModal').classList.remove('active');
+}
+
+async function submitChargeRequest(){
+    const name = document.getElementById('chargeName').value.trim();
+    const amount = document.getElementById('chargeAmount').value.trim();
+    
+    if(!name){
+        alert('입금 시 사용할 이름을 입력해주세요.');
+        return;
+    }
+    
+    if(!amount || parseInt(amount) <= 0){
+        alert('충전 금액을 올바르게 입력해주세요.');
         return;
     }
     
@@ -365,7 +414,7 @@ async function requestCharge(){
             body:JSON.stringify({
                 embeds:[{
                     title:"💰 충전 요청",
-                    description:`**마인크래프트 닉네임:** ${mcName}\n**요청 시간:** ${new Date().toLocaleString('ko-KR')}`,
+                    description:`**마인크래프트 닉네임:** ${mcName}\n**입금 이름:** ${name}\n**충전 금액:** ${parseInt(amount).toLocaleString()}원\n**요청 시간:** ${new Date().toLocaleString('ko-KR')}\n\n💳 **입금 계좌**\n국민은행: 7018-9074-0985-68`,
                     color:3447003,
                     timestamp:new Date().toISOString()
                 }]
@@ -373,7 +422,8 @@ async function requestCharge(){
         });
         
         if(response.ok){
-            alert('✅ 충전 요청이 전송되었습니다!\n\n📬 관리자 승인 후 잔액이 충전됩니다.');
+            alert('✅ 충전 요청이 전송되었습니다!\n\n💳 입금 후 관리자가 잔액을 충전해드립니다.');
+            closeChargeModal();
         }else{
             alert('❌ 요청 전송에 실패했습니다. 잠시 후 다시 시도해주세요.');
         }
