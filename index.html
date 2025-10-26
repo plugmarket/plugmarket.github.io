@@ -693,9 +693,16 @@ window.showDetail=function(pid){
     const i=currentUser&&currentUser.downloads&&currentUser.downloads.some(d=>d.pluginId===pid);
     const u=currentUser&&currentUser.reviews&&currentUser.reviews[pid];
     document.getElementById('modalTitle').textContent=currentPlugin.name;
-    const r=currentPlugin.reviews?Object.values(currentPlugin.reviews):[];
-    let h='<div class="reviews-section"><h3>📝 리뷰('+r.length+')</h3>';
-    r.forEach(x=>{const s='★'.repeat(x.rating)+'☆'.repeat(5-x.rating);h+=`<div class="review-item"><div class="review-header"><span class="review-author">${x.author}</span><span class="stars">${s}</span></div><p class="review-text">${x.text}</p><span class="review-date">${x.date}</span></div>`});
+    const r=currentPlugin.reviews||{};
+    const rKeys=Object.keys(r);
+    let h='<div class="reviews-section"><h3>📝 리뷰('+rKeys.length+')</h3>';
+    rKeys.forEach(key=>{
+        const x=r[key];
+        const isMyReview=key===currentUser.minecraftId;
+        const s='★'.repeat(x.rating)+'☆'.repeat(5-x.rating);
+        const deleteBtn=isMyReview?`<button onclick="deleteReview('${pid}','${key}')" style="background:#ef4444;color:white;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:0.85em">🗑️ 삭제</button>`:'';
+        h+=`<div class="review-item" id="review-${key}"><div class="review-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px"><div><span class="review-author">${x.author||'익명'}</span><span class="stars">${s}</span></div>${deleteBtn}</div><p class="review-text">${x.text}</p><span class="review-date">${x.date}</span></div>`;
+    });
     h+='</div>';
     const rating=currentPlugin.rating||0;
     const priceInfo=currentPlugin.type==='free'?'무료':`${(currentPlugin.price||0).toLocaleString()}원`;
@@ -782,7 +789,8 @@ window.submitReview=async function(){
     if(selectedRating===0){alert('별점을 선택해주세요');return}
     const t=document.getElementById('reviewText').value.trim();
     if(!t){alert('리뷰 내용을 입력해주세요');return}
-    const r={author:currentUser.username,rating:selectedRating,text:t,date:new Date().toLocaleString('ko-KR')};
+    const authorName=currentUser.actualMcName||currentUser.username||'익명';
+    const r={author:authorName,rating:selectedRating,text:t,date:new Date().toLocaleString('ko-KR')};
     if(!currentPlugin.reviews)currentPlugin.reviews={};
     currentPlugin.reviews[currentUser.minecraftId]=r;
     const v=Object.values(currentPlugin.reviews);
@@ -793,9 +801,46 @@ window.submitReview=async function(){
     saveLocal();
     localStorage.setItem('currentUser',JSON.stringify(currentUser));
     closeReviewModal();
+    closeDetailModal();
     alert('리뷰가 등록되었습니다!');
-    renderPlugins();
+    // 리뷰 표시 업데이트
+    setTimeout(()=>{
+        showDetail(currentPlugin.id);
+    },100);
     // 일반 사용자 리뷰 웹훅 제거 (관리자만 로그)
+};
+
+window.deleteReview=function(pid,reviewKey){
+    if(!confirm('리뷰를 삭제하시겠습니까?'))return;
+    const plugin=plugins[pid];
+    if(!plugin||!plugin.reviews)return;
+    
+    // 리뷰 삭제
+    delete plugin.reviews[reviewKey];
+    
+    // 사용자의 리뷰도 삭제
+    if(currentUser.reviews&&currentUser.reviews[pid]){
+        delete currentUser.reviews[pid];
+    }
+    
+    // 평점 재계산
+    const v=Object.values(plugin.reviews);
+    if(v.length===0){
+        plugin.rating=0;
+    }else{
+        const a=v.reduce((s,x)=>s+x.rating,0)/v.length;
+        plugin.rating=Math.round(a*10)/10;
+    }
+    
+    saveLocal();
+    localStorage.setItem('currentUser',JSON.stringify(currentUser));
+    
+    // 모달 닫고 다시 열기
+    closeDetailModal();
+    setTimeout(()=>{
+        showDetail(pid);
+    },100);
+    alert('리뷰가 삭제되었습니다!');
 };
 
 window.showHistory=function(){
