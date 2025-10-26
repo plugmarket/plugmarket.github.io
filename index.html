@@ -696,13 +696,17 @@ window.showDetail=function(pid){
     const r=currentPlugin.reviews||{};
     const rKeys=Object.keys(r);
     let h='<div class="reviews-section"><h3>📝 리뷰('+rKeys.length+')</h3>';
-    rKeys.forEach(key=>{
-        const x=r[key];
-        const isMyReview=key===currentUser.minecraftId;
-        const s='★'.repeat(x.rating)+'☆'.repeat(5-x.rating);
-        const deleteBtn=isMyReview?`<button onclick="deleteReview('${pid}','${key}')" style="background:#ef4444;color:white;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:0.85em">🗑️ 삭제</button>`:'';
-        h+=`<div class="review-item" id="review-${key}"><div class="review-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px"><div><span class="review-author">${x.author||'익명'}</span><span class="stars">${s}</span></div>${deleteBtn}</div><p class="review-text">${x.text}</p><span class="review-date">${x.date}</span></div>`;
-    });
+    if(rKeys.length===0){
+        h+='<p style="text-align:center;color:var(--text-tertiary);padding:20px">아직 리뷰가 없습니다</p>';
+    }else{
+        rKeys.forEach(key=>{
+            const x=r[key];
+            const isMyReview=currentUser&&key===currentUser.minecraftId;
+            const s='★'.repeat(x.rating)+'☆'.repeat(5-x.rating);
+            const deleteBtn=isMyReview?`<button onclick="deleteReview('${pid}','${key}')" style="background:#ef4444;color:white;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:0.85em">🗑️ 삭제</button>`:'';
+            h+=`<div class="review-item" id="review-${key}"><div class="review-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px"><div><span class="review-author">${x.author||'익명'}</span><span class="stars">${s}</span></div>${deleteBtn}</div><p class="review-text">${x.text}</p><span class="review-date">${x.date}</span></div>`;
+        });
+    }
     h+='</div>';
     const rating=currentPlugin.rating||0;
     const priceInfo=currentPlugin.type==='free'?'무료':`${(currentPlugin.price||0).toLocaleString()}원`;
