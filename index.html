@@ -148,6 +148,7 @@
         <div class="filters">
             <button class="filter-btn active" data-filter="all">전체</button>
             <button class="filter-btn" data-filter="free">무료</button>
+            <button class="filter-btn" data-filter="premium">프리미엄</button>
             <button class="filter-btn" data-filter="downloaded">다운로드함</button>
             <select class="sort-select" id="sortSelect">
                 <option value="popular">인기순</option>
@@ -543,6 +544,7 @@ function renderPlugins(){
     }
     if(currentCategory!=='all')l=l.filter(p=>p.category===currentCategory);
     if(currentFilter==='free')l=l.filter(p=>p.type==='free');
+    else if(currentFilter==='premium')l=l.filter(p=>p.type==='paid'&&(p.price||0)>0);
     else if(currentFilter==='downloaded'&&currentUser)l=l.filter(p=>currentUser.downloads&&currentUser.downloads.some(d=>d.pluginId===p.id));
     const t=document.getElementById('searchInput').value.toLowerCase();
     if(t)l=l.filter(p=>p.name.toLowerCase().includes(t));
