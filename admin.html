@@ -133,6 +133,8 @@
                                 <th>ID</th>
                                 <th>이름</th>
                                 <th>카테고리</th>
+                                <th>타입</th>
+                                <th>가격</th>
                                 <th>다운로드</th>
                                 <th>평점</th>
                                 <th>작업</th>
@@ -140,6 +142,32 @@
                         </thead>
                         <tbody id="pluginsBody"></tbody>
                     </table>
+                </div>
+                
+                <!-- 가격 편집 모달 -->
+                <div id="priceEditModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;justify-content:center;align-items:center">
+                    <div style="background:var(--card-bg);padding:30px;border-radius:15px;max-width:400px;width:90%">
+                        <h3 style="margin-bottom:20px;color:var(--text-primary)">💰 가격 설정</h3>
+                        <div style="margin-bottom:15px">
+                            <label style="display:block;margin-bottom:5px;color:var(--text-primary);font-weight:bold">플러그인 이름</label>
+                            <input type="text" id="editPluginName" style="width:100%;padding:10px;border:2px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-primary)" readonly>
+                        </div>
+                        <div style="margin-bottom:15px">
+                            <label style="display:block;margin-bottom:5px;color:var(--text-primary);font-weight:bold">가격 (원)</label>
+                            <input type="number" id="editPluginPrice" min="0" style="width:100%;padding:10px;border:2px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-primary)" placeholder="0">
+                        </div>
+                        <div style="margin-bottom:15px">
+                            <label style="display:block;margin-bottom:5px;color:var(--text-primary);font-weight:bold">타입</label>
+                            <select id="editPluginType" style="width:100%;padding:10px;border:2px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-primary)">
+                                <option value="free">무료</option>
+                                <option value="paid">유료</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:10px">
+                            <button class="btn btn-primary" onclick="savePriceEdit()" style="flex:1">저장</button>
+                            <button class="btn btn-danger" onclick="closePriceEditModal()" style="flex:1">취소</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -306,13 +334,70 @@
                     <td>${p.id}</td>
                     <td><strong>${p.name}</strong></td>
                     <td><span class="badge badge-success">${p.category}</span></td>
+                    <td>${p.type === 'free' ? '무료' : '유료'}</td>
+                    <td><strong style="color:#f59e0b">${(p.price || 0).toLocaleString()}원</strong></td>
                     <td>${p.downloads || 0}</td>
                     <td>${(p.rating || 0).toFixed(1)}</td>
                     <td>
-                        <button class="btn btn-primary" onclick="resetDownloads('${p.id}')">다운로드 초기화</button>
+                        <button class="btn btn-primary" onclick="editPluginPrice('${p.id}')" style="background:#f59e0b;font-size:0.9em;padding:8px 15px">가격 수정</button>
+                        <button class="btn btn-primary" onclick="resetDownloads('${p.id}')" style="font-size:0.9em;padding:8px 15px">다운로드 초기화</button>
                     </td>
                 </tr>
             `).join('');
+        }
+        
+        let currentEditingPluginId = null;
+        
+        function editPluginPrice(pluginId){
+            currentEditingPluginId = pluginId;
+            const plugin = plugins[pluginId];
+            
+            document.getElementById('editPluginName').value = plugin.name;
+            document.getElementById('editPluginPrice').value = plugin.price || 0;
+            document.getElementById('editPluginType').value = plugin.type || 'free';
+            
+            document.getElementById('priceEditModal').style.display = 'flex';
+        }
+        
+        function closePriceEditModal(){
+            document.getElementById('priceEditModal').style.display = 'none';
+            currentEditingPluginId = null;
+        }
+        
+        async function savePriceEdit(){
+            const newPrice = parseInt(document.getElementById('editPluginPrice').value) || 0;
+            const newType = document.getElementById('editPluginType').value;
+            
+            if(newType === 'paid' && newPrice <= 0){
+                alert('유료 플러그인은 가격을 0보다 크게 설정해야 합니다.');
+                return;
+            }
+            
+            if(!confirm(`가격을 ${newPrice.toLocaleString()}원으로 설정하시겠습니까?`)) return;
+            
+            plugins[currentEditingPluginId].price = newPrice;
+            plugins[currentEditingPluginId].type = newType;
+            
+            if(newType === 'free'){
+                plugins[currentEditingPluginId].price = 0;
+            }
+            
+            localStorage.setItem('plugins', JSON.stringify(plugins));
+            
+            // Firebase 업데이트
+            try {
+                await database.ref(`plugins/${currentEditingPluginId}`).update({
+                    price: plugins[currentEditingPluginId].price,
+                    type: plugins[currentEditingPluginId].type
+                });
+            } catch(e) {
+                console.log('ℹ️ Firebase 업데이트 불가 - localStorage만 사용');
+            }
+            
+            renderStats();
+            renderPluginsTable();
+            closePriceEditModal();
+            alert('가격 설정 완료!');
         }
         
         async function resetDownloads(pluginId){
