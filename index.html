@@ -313,10 +313,29 @@ function loadLocal(){
     if(s){
         try{
             plugins=JSON.parse(s);
+            // party_plugin이 없으면 추가
+            if(!plugins.p10){
+                plugins.p10={
+                    id:'p10',
+                    name:"PartyPlugin",
+                    description:"파티 플러그인",
+                    version:"1.0",
+                    type:"paid",
+                    price:0,
+                    category:"게임플레이",
+                    downloads:0,
+                    rating:0,
+                    reviews:{},
+                    downloadUrl:"https://www.dropbox.com/scl/fi/b95odfznqkzds40o6ieov/party_plugin-1.0-paper.jar?rlkey=h2wquxzpyn2ukltkv08onhhbo&st=4duvaelz&dl=1"
+                };
+                saveLocal();
+                console.log('✅ PartyPlugin added');
+            }
             console.log('✅ Loaded plugins from localStorage:', Object.keys(plugins).length);
         }catch(e){
             console.error('Error parsing localStorage:', e);
             plugins={...initialData};
+            saveLocal();
         }
     }else{
         plugins={...initialData};
@@ -531,9 +550,10 @@ function renderPlugins(){
         const i=currentUser&&currentUser.downloads&&currentUser.downloads.some(d=>d.pluginId===p.id);
         const c=p.reviews?Object.keys(p.reviews).length:0;
         const s='★'.repeat(Math.round(p.rating||0))+'☆'.repeat(5-Math.round(p.rating||0));
-        const badgeText=p.type==='free'?'무료':`${(p.price||0).toLocaleString()}원`;
-        const badgeColor=p.type==='free'?'#10b981':'#f59e0b';
-        return`<div class="plugin-card"><div style="display:flex;justify-content:space-between"><div><h3 class="plugin-title">${p.name}</h3><span class="plugin-category">${p.category}</span></div><span class="plugin-badge" style="background:${badgeColor}">${badgeText}</span></div><p class="plugin-description">${p.description}</p><p class="plugin-version">v${p.version}</p><div class="plugin-rating"><span class="stars">${s}</span><span class="rating-count">${(p.rating||0).toFixed(1)}(${c})</span></div><p class="plugin-downloads">📥 ${p.downloads}회</p>${i?'<div style="background:#10b981;color:white;padding:8px;border-radius:8px;text-align:center;margin:10px 0">✓ 다운로드 완료</div>':''}<div class="plugin-footer"><button class="btn btn-primary" data-plugin-id="${p.id}" data-action="download">${i?'재다운':p.type==='free'?'다운로드':'구매'}</button><button class="btn btn-secondary" data-plugin-id="${p.id}" data-action="detail">상세보기</button></div></div>`
+        const isFree=p.type==='free'||(p.price||0)===0;
+        const badgeText=isFree?'무료':`${(p.price||0).toLocaleString()}원`;
+        const badgeColor=isFree?'#10b981':'#f59e0b';
+        return`<div class="plugin-card"><div style="display:flex;justify-content:space-between"><div><h3 class="plugin-title">${p.name}</h3><span class="plugin-category">${p.category}</span></div><span class="plugin-badge" style="background:${badgeColor}">${badgeText}</span></div><p class="plugin-description">${p.description}</p><p class="plugin-version">v${p.version}</p><div class="plugin-rating"><span class="stars">${s}</span><span class="rating-count">${(p.rating||0).toFixed(1)}(${c})</span></div><p class="plugin-downloads">📥 ${p.downloads}회</p>${i?'<div style="background:#10b981;color:white;padding:8px;border-radius:8px;text-align:center;margin:10px 0">✓ 다운로드 완료</div>':''}<div class="plugin-footer"><button class="btn btn-primary" data-plugin-id="${p.id}" data-action="download">${i?'재다운':isFree?'다운로드':'구매'}</button><button class="btn btn-secondary" data-plugin-id="${p.id}" data-action="detail">상세보기</button></div></div>`
     }).join('');
     setupPluginCardListeners();
 }
@@ -551,9 +571,10 @@ window.showDetail=function(pid){
     r.forEach(x=>{const s='★'.repeat(x.rating)+'☆'.repeat(5-x.rating);h+=`<div class="review-item"><div class="review-header"><span class="review-author">${x.author}</span><span class="stars">${s}</span></div><p class="review-text">${x.text}</p><span class="review-date">${x.date}</span></div>`});
     h+='</div>';
     const rating=currentPlugin.rating||0;
-    document.getElementById('modalBody').innerHTML=`<p><strong>카테고리:</strong> ${currentPlugin.category}</p><p><strong>버전:</strong> v${currentPlugin.version}</p><p><strong>평점:</strong> ${rating.toFixed(1)}/5.0</p><p><strong>다운로드:</strong> ${currentPlugin.downloads}회</p><p style="margin-top:15px">${currentPlugin.description}</p>${h}`;
+    const priceInfo=currentPlugin.type==='free'?'무료':`${(currentPlugin.price||0).toLocaleString()}원`;
+    document.getElementById('modalBody').innerHTML=`<p><strong>카테고리:</strong> ${currentPlugin.category}</p><p><strong>타입:</strong> ${currentPlugin.type==='free'?'무료':'유료'}</p><p><strong>가격:</strong> ${priceInfo}</p><p><strong>버전:</strong> v${currentPlugin.version}</p><p><strong>평점:</strong> ${rating.toFixed(1)}/5.0</p><p><strong>다운로드:</strong> ${currentPlugin.downloads}회</p><p style="margin-top:15px">${currentPlugin.description}</p>${h}`;
     const b=document.getElementById('modalAction');
-    if(i){b.textContent=u?'리뷰 수정':'리뷰 작성';b.onclick=()=>openReviewModal(pid)}else{b.textContent='다운로드';b.onclick=()=>{downloadPlugin(pid);closeDetailModal()}}
+    if(i){b.textContent=u?'리뷰 수정':'리뷰 작성';b.onclick=()=>openReviewModal(pid)}else{b.textContent=currentPlugin.type==='free'?'다운로드':'구매';b.onclick=()=>{downloadPlugin(pid);closeDetailModal()}}
     document.getElementById('detailModal').classList.add('active');
 };
 
@@ -563,8 +584,9 @@ window.downloadPlugin=async function(pid){
     if(!currentUser){if(confirm('로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?')){window.location.href='login.html'}return}
     const p=plugins[pid];if(!p)return;
     
-    // 유료 플러그인인 경우 결제 처리
-    if(p.type==='paid'&&!currentUser.downloads.some(d=>d.pluginId===pid)){
+    // 유료 플러그인인 경우 결제 처리 (가격이 0이 아닐 때만)
+    const isPaid=p.type==='paid'&&(p.price||0)>0;
+    if(isPaid&&!currentUser.downloads.some(d=>d.pluginId===pid)){
         const allUsers=JSON.parse(localStorage.getItem('allUsers')||'{}');
         const userBalance=allUsers[currentUser.minecraftId]?.balance||0;
         const price=p.price||0;
