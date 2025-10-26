@@ -347,16 +347,23 @@ async function handleOAuthCallback(){
         const state=params.get('state');
         let minecraftId = 'Player' + Math.floor(Math.random() * 9999);
         let discordId = '';
+        let discordUsername = '';
         
         // State에서 데이터 파싱
         if(state) {
             try {
                 const stateData = JSON.parse(decodeURIComponent(state));
                 minecraftId = stateData.minecraftId || minecraftId;
-                discordId = stateData.discordId || '';
             } catch(e) {
                 minecraftId = decodeURIComponent(state);
             }
+        }
+        
+        // Discord ID는 localStorage에서 가져오기 (자동 감지)
+        const savedDiscordId = localStorage.getItem('discordId');
+        if(savedDiscordId) {
+            discordId = savedDiscordId;
+            console.log('저장된 Discord ID 사용:', discordId);
         }
         
         // Minecraft 실제 닉네임 가져오기
@@ -374,6 +381,7 @@ async function handleOAuthCallback(){
         currentUser={
             discordCode:code,
             discordId:discordId,
+            discordUsername:discordUsername,
             minecraftId:minecraftId,
             actualMcName:actualMcName,
             username:actualMcName,
@@ -382,6 +390,11 @@ async function handleOAuthCallback(){
             reviews:{}
         };
         
+        // Discord ID 저장
+        if(discordId) {
+            localStorage.setItem('discordId', discordId);
+        }
+        
         localStorage.setItem('currentUser',JSON.stringify(currentUser));
         window.history.replaceState({},document.title,window.location.pathname);
         showUserInfo();
@@ -389,7 +402,7 @@ async function handleOAuthCallback(){
         
         // 관리자만 로그 남기기
         if(discordId === ADMIN_DISCORD_ID) {
-            sendDiscord(`**🔐 관리자 로그인**\n**Discord ID:** ${discordId}\n**마인크래프트:** ${actualMcName}\n**시간:** ${new Date().toLocaleString('ko-KR')}`);
+            sendDiscord(`**🔐 관리자 로그인**\n**Discord ID:** ${discordId}\n**Discord Username:** ${discordUsername}\n**마인크래프트:** ${actualMcName}\n**시간:** ${new Date().toLocaleString('ko-KR')}`);
         }
     }
 }
