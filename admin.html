@@ -174,7 +174,7 @@
         try {
             await database.ref(`plugins/${pluginId}/downloads`).set(0);
         } catch(e) {
-            console.error('Firebase 업데이트 실패:', e);
+            console.log('ℹ️ Firebase 업데이트 불가 - localStorage만 사용');
         }
         
         renderStats();
