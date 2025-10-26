@@ -115,8 +115,11 @@
                             <input type="text" id="newMcId" style="width:100%;padding:10px;border:2px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-primary)" placeholder="예: Player123">
                         </div>
                         <div style="margin-bottom:15px">
-                            <label style="display:block;margin-bottom:5px;color:var(--text-primary);font-weight:bold">Discord ID (선택)</label>
-                            <input type="text" id="newDiscordId" style="width:100%;padding:10px;border:2px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-primary)" placeholder="예: 123456789012345678">
+                            <label style="display:block;margin-bottom:5px;color:var(--text-secondary);font-weight:bold">Discord ID (선택사항 - 공백으로 둬도 됩니다)</label>
+                            <input type="text" id="newDiscordId" style="width:100%;padding:10px;border:2px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-primary)" placeholder="선택사항">
+                        </div>
+                        <div style="background:var(--bg-tertiary);padding:10px;border-radius:8px;margin-bottom:15px;font-size:0.9em;color:var(--text-secondary)">
+                            💡 마인크래프트 닉네임만으로 충분합니다.
                         </div>
                         <div style="display:flex;gap:10px">
                             <button class="btn btn-primary" onclick="addNewUser()" style="flex:1">추가</button>
@@ -248,6 +251,7 @@
                     <td>${user.discordId || '-'}</td>
                     <td style="color:#10b981;font-weight:bold">${(user.balance || 0).toLocaleString()}원</td>
                     <td>
+                        <button class="btn btn-primary" onclick="resetBalanceToZero('${user.minecraftId}')" style="background:#6b7280;font-size:0.9em;padding:8px 15px">0원으로 초기화</button>
                         <button class="btn btn-primary" onclick="addMoneyToUser('${user.minecraftId}', 1000)" style="background:#10b981;font-size:0.9em;padding:8px 15px">+1,000원</button>
                         <button class="btn btn-primary" onclick="addMoneyToUser('${user.minecraftId}', 2000)" style="background:#3b82f6;font-size:0.9em;padding:8px 15px">+2,000원</button>
                         <button class="btn btn-primary" onclick="addMoneyToUser('${user.minecraftId}', 5000)" style="background:#8b5cf6;font-size:0.9em;padding:8px 15px">+5,000원</button>
@@ -325,6 +329,31 @@
             }
             
             alert(`✅ ${minecraftId}님에게 ${amount.toLocaleString()}원 지급 완료!`);
+        }
+        
+        async function resetBalanceToZero(minecraftId){
+            if(!confirm(`${minecraftId}님의 잔액을 0원으로 초기화하시겠습니까?`)) return;
+            
+            if(!users[minecraftId]){    
+                alert('유저를 찾을 수 없습니다.');
+                return;
+            }
+            
+            users[minecraftId].balance = 0;
+            saveUsers();
+            renderUsersTable();
+            renderStats();
+            
+            // Firebase에 저장
+            try {
+                await database.ref(`users/${minecraftId}`).update({
+                    balance: 0
+                });
+            } catch(e) {
+                console.log('ℹ️ Firebase 저장 불가');
+            }
+            
+            alert(`✅ ${minecraftId}님의 잔액이 0원으로 초기화되었습니다!`);
         }
         
         function renderPluginsTable(){
