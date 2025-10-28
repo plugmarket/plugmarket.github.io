@@ -835,7 +835,7 @@ window.showVersionModal=function(pid){
     let versionHTML = `<p style="margin-bottom:15px;color:var(--text-primary)"><strong>${p.name}</strong> 다운로드할 마인크래프트 버전을 선택해주세요:</p>`;
     versionHTML += `<select id="versionSelectModal" style="width:100%;padding:12px;border:2px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-primary);font-size:1em;cursor:pointer;margin-bottom:15px">
         <option value="">버전을 골르세요</option>
-        ${versionKeys.map(v => `<option value="${v}">Minecraft ${v}</option>`).join('')}
+        ${versionKeys.map(v => `<option value="${v}">${v}</option>`).join('')}
     </select>`;
     
     document.getElementById('versionModalBody').innerHTML = versionHTML;
