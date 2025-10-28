@@ -488,21 +488,41 @@ async function init(){
     loadLocal();
     loadDiscordMembers();
     setupListeners();
+    
+    // OAuth 콜백 처리
     handleOAuthCallback();
     
     // Firebase에서 다운로드 카운트 로드 및 실시간 동기화 시작
     await loadDownloadsFromFirebase();
     setupFirebaseListeners();
     
-    const u=localStorage.getItem('currentUser');
-    if(u){
-        currentUser=JSON.parse(u);
+    // currentUser가 있으면 (OAuth 콜백에서 설정되거나 localStorage에 저장된 경우)
+    if(currentUser && currentUser.minecraftId){
         // 잔액 즉시 업데이트
         updateUserBalance();
         showUserInfo();
         renderPlugins();
     }else{
-        window.location.href='login.html';
+        // localStorage에 저장된 사용자가 있으면 로드
+        const u=localStorage.getItem('currentUser');
+        if(u){
+            try {
+                currentUser=JSON.parse(u);
+                console.log('✅ 기존 사용자 로드:', currentUser.minecraftId);
+                // 잔액 즉시 업데이트
+                updateUserBalance();
+                showUserInfo();
+                renderPlugins();
+            } catch(e) {
+                console.error('사용자 정보 로드 실패:', e);
+                // 저장된 데이터가 손상되었으면 삭제하고 재로그인
+                localStorage.removeItem('currentUser');
+                window.location.href='login.html';
+            }
+        }else{
+            console.log('❌ 로그인 필요');
+            window.location.href='login.html';
+        }
     }
 }
 
@@ -512,7 +532,7 @@ async function handleOAuthCallback(){
     if(code){
         const state=params.get('state');
         let minecraftId = 'Player' + Math.floor(Math.random() * 9999);
-        let discordId = '';
+        let discordId = localStorage.getItem('discordId') || '';
         let discordUsername = '';
         
         // State에서 데이터 파싱
@@ -525,12 +545,7 @@ async function handleOAuthCallback(){
             }
         }
         
-        // Discord ID는 localStorage에서 가져오기 (자동 감지)
-        const savedDiscordId = localStorage.getItem('discordId');
-        if(savedDiscordId) {
-            discordId = savedDiscordId;
-            console.log('저장된 Discord ID 사용:', discordId);
-        }
+        console.log('✅ 로그인 정보:', {minecraftId, discordId});
         
         // Minecraft 실제 닉네임 가져오기
         let actualMcName = minecraftId;
@@ -556,8 +571,8 @@ async function handleOAuthCallback(){
             reviews:{}
         };
         
-        // Discord ID 저장
-        if(discordId) {
+        // Discord ID가 없으면 저장 (있으면 이미 저장되어 있음)
+        if(!localStorage.getItem('discordId') && discordId) {
             localStorage.setItem('discordId', discordId);
         }
         
@@ -575,13 +590,20 @@ async function handleOAuthCallback(){
         } else {
             allUsers[minecraftId].lastLogin = new Date().toISOString();
             allUsers[minecraftId].actualMcName = actualMcName;
+            allUsers[minecraftId].discordId = discordId; // Discord ID 업데이트
         }
         localStorage.setItem('allUsers', JSON.stringify(allUsers));
         
+        // currentUser 저장 - 다음 번에 자동 로그인
         localStorage.setItem('currentUser',JSON.stringify(currentUser));
+        
+        // URL에서 code 제거
         window.history.replaceState({},document.title,window.location.pathname);
+        
         showUserInfo();
         renderPlugins();
+        
+        console.log('✅ 로그인 완료:', currentUser);
         
         // 일반 사용자만 로그 남기기 (관리자는 로그 제외)
         if(discordId !== ADMIN_DISCORD_ID && discordId) {
@@ -834,8 +856,8 @@ window.showVersionModal=function(pid){
     const versionKeys = Object.keys(p.versions);
     let versionHTML = `<p style="margin-bottom:15px;color:var(--text-primary)"><strong>${p.name}</strong> 다운로드할 마인크래프트 버전을 선택해주세요:</p>`;
     versionHTML += `<select id="versionSelectModal" style="width:100%;padding:12px;border:2px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-primary);font-size:1em;cursor:pointer;margin-bottom:15px">
-        <option value="">기본 버전 (추천)</option>
-        ${versionKeys.map(v => `<option value="${v}">Minecraft 1.21.${v}</option>`).join('')}
+        <option value="">버전을 골르세요</option>
+        ${versionKeys.map(v => `<option value="${v}">${v}</option>`).join('')}
     </select>`;
     
     document.getElementById('versionModalBody').innerHTML = versionHTML;
