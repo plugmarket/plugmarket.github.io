@@ -226,6 +226,17 @@
             </div>
         </div>
     </div>
+    <div class="modal" id="versionModal">
+        <div class="modal-content">
+            <h2 class="modal-header" style="color:#667eea">📦 버전 선택</h2>
+            <div class="modal-body" id="versionModalBody">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeVersionModal()">취소</button>
+                <button class="btn btn-primary" onclick="confirmVersionDownload()">다운로드</button>
+            </div>
+        </div>
+    </div>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -249,7 +260,7 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 const analytics = firebase.analytics();
 
-let plugins={},currentUser=null,currentFilter='all',currentCategory='all',currentSort='popular',selectedRating=0,currentPlugin=null,discordMembers=[];
+let plugins={},currentUser=null,currentFilter='all',currentCategory='all',currentSort='popular',selectedRating=0,currentPlugin=null,discordMembers=[],selectedVersion=null,pendingDownloadPlugin=null;
 const WEBHOOK='https://discord.com/api/webhooks/1425431420158869584/_H7Fr8vnzydAuqVoQ8Sbm5c2wHlb7EL8XXAIadq1waQGaaPCvJYGjhQotyWU4DHY0-zv';
 const CHARGE_WEBHOOK='https://discord.com/api/webhooks/1431904746448621569/lf5VZA1yzetYguDUDCsIJuE0B0K3CQ1TL9Ol-GYDQn5uUGRXQ5XtNGO7FoS6ZVjuwq40';
 const DISCORD_CLIENT_ID='1414591036734312499';
@@ -738,14 +749,28 @@ window.showDetail=function(pid){
     
     document.getElementById('modalBody').innerHTML=`<p><strong>카테고리:</strong> ${currentPlugin.category}</p><p><strong>타입:</strong> ${currentPlugin.type==='free'?'무료':'유료'}</p><p><strong>가격:</strong> ${priceInfo}</p><p><strong>버전:</strong> v${currentPlugin.version}</p><p><strong>평점:</strong> ${rating.toFixed(1)}/5.0</p><p><strong>다운로드:</strong> ${currentPlugin.downloads}회</p><p style="margin-top:15px">${currentPlugin.description}</p>${versionSelector}${h}`;
     const b=document.getElementById('modalAction');
-    if(i){b.textContent=u?'리뷰 수정':'리뷰 작성';b.onclick=()=>openReviewModal(pid)}else{b.textContent=currentPlugin.type==='free'?'다운로드':'구매';b.onclick=()=>{downloadPlugin(pid);closeDetailModal()}}
+    if(i){b.textContent=u?'리뷰 수정':'리뷰 작성';b.onclick=()=>openReviewModal(pid)}else{b.textContent=currentPlugin.type==='free'?'다운로드':'구매';b.onclick=()=>downloadPlugin(pid)}
     document.getElementById('detailModal').classList.add('active');
 };
 
 window.closeDetailModal=function(){document.getElementById('detailModal').classList.remove('active')};
 
-window.downloadPlugin=async function(pid){
+window.downloadPlugin=async function(pid,forceDownload){
     if(!currentUser){if(confirm('로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?')){window.location.href='login.html'}return}
+    const p=plugins[pid];if(!p)return;
+    
+    // 버전이 있고 강제 다운로드가 아닌 경우 버전 선택 모달 표시
+    if(p.versions && Object.keys(p.versions).length > 0 && !forceDownload){
+        pendingDownloadPlugin = pid;
+        showVersionModal(pid);
+        return;
+    }
+    
+    // 실제 다운로드 진행
+    await executeDownload(pid);
+};
+
+async function executeDownload(pid){
     const p=plugins[pid];if(!p)return;
     
     // 유료 플러그인인 경우 결제 처리 (가격이 0이 아닐 때만)
@@ -781,10 +806,9 @@ window.downloadPlugin=async function(pid){
     
     // 버전 선택 여부 확인 (PartyPlugin)
     let downloadUrl = p.downloadUrl;
-    const versionSelect = document.getElementById('versionSelect');
-    if(versionSelect && versionSelect.value && p.versions && p.versions[versionSelect.value]){
-        downloadUrl = p.versions[versionSelect.value];
-        console.log('✅ 선택된 버전:', versionSelect.value);
+    if(selectedVersion && p.versions && p.versions[selectedVersion]){
+        downloadUrl = p.versions[selectedVersion];
+        console.log('✅ 선택된 버전:', selectedVersion);
     }
     
     // 숨겨진 iframe으로 다운로드 처리
@@ -799,7 +823,42 @@ window.downloadPlugin=async function(pid){
     
     localStorage.setItem('currentUser',JSON.stringify(currentUser));
     renderPlugins();
+    selectedVersion = null; // 버전 선택 초기화
     // 일반 사용자 다운로드 웹훅 제거 (관리자만 로그)
+}
+
+window.showVersionModal=function(pid){
+    const p=plugins[pid];
+    if(!p || !p.versions) return;
+    
+    const versionKeys = Object.keys(p.versions);
+    let versionHTML = `<p style="margin-bottom:15px;color:var(--text-primary)"><strong>${p.name}</strong> 다운로드할 마인크래프트 버전을 선택해주세요:</p>`;
+    versionHTML += `<select id="versionSelectModal" style="width:100%;padding:12px;border:2px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-primary);font-size:1em;cursor:pointer;margin-bottom:15px">
+        <option value="">기본 버전 (추천)</option>
+        ${versionKeys.map(v => `<option value="${v}">Minecraft 1.21.${v}</option>`).join('')}
+    </select>`;
+    
+    document.getElementById('versionModalBody').innerHTML = versionHTML;
+    document.getElementById('versionModal').classList.add('active');
+};
+
+window.closeVersionModal=function(){
+    document.getElementById('versionModal').classList.remove('active');
+    pendingDownloadPlugin = null;
+    selectedVersion = null;
+};
+
+window.confirmVersionDownload=function(){
+    if(!pendingDownloadPlugin) return;
+    
+    const versionSelect = document.getElementById('versionSelectModal');
+    if(versionSelect){
+        selectedVersion = versionSelect.value || null;
+    }
+    
+    closeVersionModal();
+    closeDetailModal(); // 상세보기 모달도 함께 닫기
+    executeDownload(pendingDownloadPlugin);
 };
 
 window.openReviewModal=function(pid){
