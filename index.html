@@ -850,7 +850,7 @@ window.showDetail=function(pid){
             <p style="font-weight:bold;color:var(--text-primary);margin-bottom:10px">📦 마인크래프트 버전 선택</p>
             <select id="versionSelect" style="width:100%;padding:10px;border:2px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-primary);font-size:1em;cursor:pointer">
                 <option value="">기본 버전</option>
-                ${versionKeys.map(v => `<option value="${v}">1.21.x - ${v}</option>`).join('')}
+                ${versionKeys.map(v => `<option value="${v}">${v}</option>`).join('')}
             </select>
         </div>`;
     }
