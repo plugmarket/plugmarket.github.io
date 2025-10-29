@@ -410,14 +410,57 @@ function loadLocal(){
                 saveLocal();
                 console.log('✅ PartyPlugin added');
             }
+            // Ensure GuildPlugin exists
+            if(!plugins.p11){
+                plugins.p11={
+                    id:'p11',
+                    name:"GuildPlugin",
+                    description:"길드 플러그인",
+                    version:"1.2",
+                    type:"free",
+                    category:"시스템",
+                    downloads:0,
+                    rating:0,
+                    reviews:{},
+                    downloadUrl:"https://www.dropbox.com/scl/fi/mbc6cu9ml8k6f2ogdf0xl/guild_plugin-1.2-paper.jar?rlkey=rk09z3l8go7bdrdsowaeacpqm&st=b4wp4vu9&dl=1"
+                };
+                saveLocal();
+                console.log('✅ GuildPlugin added');
+            }
             console.log('✅ Loaded plugins from localStorage:', Object.keys(plugins).length);
         }catch(e){
             console.error('Error parsing localStorage:', e);
             plugins={...initialData};
+            // Add GuildPlugin on fresh init too
+            plugins.p11={
+                id:'p11',
+                name:"GuildPlugin",
+                description:"길드 플러그인",
+                version:"1.2",
+                type:"free",
+                category:"시스템",
+                downloads:0,
+                rating:0,
+                reviews:{},
+                downloadUrl:"https://www.dropbox.com/scl/fi/mbc6cu9ml8k6f2ogdf0xl/guild_plugin-1.2-paper.jar?rlkey=rk09z3l8go7bdrdsowaeacpqm&st=b4wp4vu9&dl=1"
+            };
             saveLocal();
         }
     }else{
         plugins={...initialData};
+        // Add GuildPlugin on first-time init
+        plugins.p11={
+            id:'p11',
+            name:"GuildPlugin",
+            description:"길드 플러그인",
+            version:"1.2",
+            type:"free",
+            category:"시스템",
+            downloads:0,
+            rating:0,
+            reviews:{},
+            downloadUrl:"https://www.dropbox.com/scl/fi/mbc6cu9ml8k6f2ogdf0xl/guild_plugin-1.2-paper.jar?rlkey=rk09z3l8go7bdrdsowaeacpqm&st=b4wp4vu9&dl=1"
+        };
         saveLocal();
         console.log('✅ Initialized plugins with default data');
     }
