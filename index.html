@@ -427,6 +427,23 @@ function loadLocal(){
                 saveLocal();
                 console.log('✅ GuildPlugin added');
             }
+            // Ensure FriendPlugin exists
+            if(!plugins.p12){
+                plugins.p12={
+                    id:'p12',
+                    name:"FriendPlugin",
+                    description:"친구 플러그인",
+                    version:"1.1",
+                    type:"free",
+                    category:"시스템",
+                    downloads:0,
+                    rating:0,
+                    reviews:{},
+                    downloadUrl:"https://www.dropbox.com/scl/fi/6tr94vp2peqjns0w0c6ol/firend_plugin-1.1-paper.jar?rlkey=j0vkpwugnhjvla7npy00f9h6e&st=tvmxuubu&dl=1"
+                };
+                saveLocal();
+                console.log('✅ FriendPlugin added');
+            }
             console.log('✅ Loaded plugins from localStorage:', Object.keys(plugins).length);
         }catch(e){
             console.error('Error parsing localStorage:', e);
@@ -444,6 +461,19 @@ function loadLocal(){
                 reviews:{},
                 downloadUrl:"https://www.dropbox.com/scl/fi/mbc6cu9ml8k6f2ogdf0xl/guild_plugin-1.2-paper.jar?rlkey=rk09z3l8go7bdrdsowaeacpqm&st=b4wp4vu9&dl=1"
             };
+            // Add FriendPlugin on fresh init
+            plugins.p12={
+                id:'p12',
+                name:"FriendPlugin",
+                description:"친구 플러그인",
+                version:"1.1",
+                type:"free",
+                category:"시스템",
+                downloads:0,
+                rating:0,
+                reviews:{},
+                downloadUrl:"https://www.dropbox.com/scl/fi/6tr94vp2peqjns0w0c6ol/firend_plugin-1.1-paper.jar?rlkey=j0vkpwugnhjvla7npy00f9h6e&st=tvmxuubu&dl=1"
+            };
             saveLocal();
         }
     }else{
@@ -460,6 +490,19 @@ function loadLocal(){
             rating:0,
             reviews:{},
             downloadUrl:"https://www.dropbox.com/scl/fi/mbc6cu9ml8k6f2ogdf0xl/guild_plugin-1.2-paper.jar?rlkey=rk09z3l8go7bdrdsowaeacpqm&st=b4wp4vu9&dl=1"
+        };
+        // Add FriendPlugin on first-time init
+        plugins.p12={
+            id:'p12',
+            name:"FriendPlugin",
+            description:"친구 플러그인",
+            version:"1.1",
+            type:"free",
+            category:"시스템",
+            downloads:0,
+            rating:0,
+            reviews:{},
+            downloadUrl:"https://www.dropbox.com/scl/fi/6tr94vp2peqjns0w0c6ol/firend_plugin-1.1-paper.jar?rlkey=j0vkpwugnhjvla7npy00f9h6e&st=tvmxuubu&dl=1"
         };
         saveLocal();
         console.log('✅ Initialized plugins with default data');
