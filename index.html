@@ -1105,6 +1105,30 @@ window.showHistory=function(){
             const pluginDesc=plugin?plugin.description:'플러그인 정보 없음';
             const pluginVer=plugin?`v${plugin.version}`:'';
             const pluginType=plugin&&plugin.type==='paid'?`💰 ${(plugin.price||0).toLocaleString()}원 구매`:'🎁 무료 다운로드';
+            // party plugin만 버전선택
+            if(plugin && plugin.id==='p10' && plugin.versions){
+              const versionSelectId='redownloadVersion_p10'; // 고유 id(한명만 내역 생성됨)
+              return`
+                <div class="history-item" style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap">
+                  <div style="flex:1;min-width:200px">
+                      <h3 style="margin-bottom:8px;color:var(--text-primary)">${x.pluginName}</h3>
+                      <p style="color:var(--text-secondary);font-size:0.9em;margin-bottom:5px">${pluginDesc}</p>
+                      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+                          <span style="background:var(--tag-bg);padding:4px 10px;border-radius:10px;font-size:0.85em;color:var(--text-secondary)">${pluginVer}</span>
+                          <span style="background:#10b981;color:white;padding:4px 10px;border-radius:10px;font-size:0.85em">${pluginType}</span>
+                      </div>
+                      <p style="color:var(--text-tertiary);font-size:0.85em;margin-top:8px">📅 ${x.date}</p>
+                      <div style="margin-top:13px">  
+                        <select id="${versionSelectId}" style="padding:7px;border-radius:7px;margin-right:9px;">
+                          <option value="">기본</option>
+                          ${Object.keys(plugin.versions).map(v=>`<option value="${v}">${v}</option>`).join('')}
+                        </select>
+                        <button class="btn btn-primary" onclick="reDownloadVersion('p10')">📥 버전별 다운로드</button>
+                      </div>
+                  </div>
+                </div>`;
+            }
+            // 나머지 일반 플러그인 내역
             return`
             <div class="history-item" style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap">
                 <div style="flex:1;min-width:200px">
@@ -1122,6 +1146,19 @@ window.showHistory=function(){
     }
     
     document.getElementById('historyModal').classList.add('active');
+};
+
+window.reDownloadVersion=function(pluginId){
+    const plugin = plugins[pluginId];
+    if(!plugin) { alert('플러그인 정보 없음!'); return; }
+    let downloadUrl = plugin.downloadUrl;
+    // party 플러그인은 무조건 버전 드롭다운 존재
+    const select = document.getElementById('redownloadVersion_p10');
+    const version = select? select.value : '';
+    if(version && plugin.versions && plugin.versions[version]){
+        downloadUrl = plugin.versions[version];
+    }
+    window.open(downloadUrl, '_blank');
 };
 
 window.reDownloadPlugin=function(pluginId){
