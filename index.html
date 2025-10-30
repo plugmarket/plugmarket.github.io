@@ -889,52 +889,54 @@ window.downloadPlugin=async function(pid,forceDownload){
 async function executeDownload(pid){
     const p=plugins[pid];if(!p)return;
     
-    // 유료 플러그인인 경우 결제 처리 (가격이 0이 아닐 때만)
+    // 유료 플러그인 1회 구매 처리
     const isPaid=p.type==='paid'&&(p.price||0)>0;
-    if(isPaid&&!currentUser.downloads.some(d=>d.pluginId===pid)){
-        const allUsers=JSON.parse(localStorage.getItem('allUsers')||'{}');
-        const userBalance=allUsers[currentUser.minecraftId]?.balance||0;
-        const price=p.price||0;
-        
-        if(userBalance<price){
-            alert(`❌ 잔액이 부족합니다!\n필요: ${price.toLocaleString()}원\n보유: ${userBalance.toLocaleString()}원\n\n관리자에게 문의하여 잔액을 충전해주세요.`);
-            return;
+    let purchased = false;
+    // 구매 이력은 downloads 일부에 구매 후 최초 다운로드 이력 남김
+    if(isPaid){
+        const alreadyPurchased=currentUser && currentUser.downloads && currentUser.downloads.some(d=>d.pluginId===pid);
+        if(!alreadyPurchased){
+            const allUsers=JSON.parse(localStorage.getItem('allUsers')||'{}');
+            const userBalance=allUsers[currentUser.minecraftId]?.balance||0;
+            const price=p.price||0;
+            if(userBalance<price){
+                alert(`❌ 잔액이 부족합니다!\n필요: ${price.toLocaleString()}원\n보유: ${userBalance.toLocaleString()}원\n\n관리자에게 문의하여 잔액을 충전해주세요.`);
+                return;
+            }
+            if(!confirm(`${p.name}을(를) ${price.toLocaleString()}원에 구매하시겠습니까?\n남은 잔액: ${(userBalance-price).toLocaleString()}원`)){
+                return;
+            }
+            allUsers[currentUser.minecraftId].balance=userBalance-price;
+            localStorage.setItem('allUsers',JSON.stringify(allUsers));
+            updateUserBalance();
+            purchased = true;
+        } else {
+            purchased = true;
         }
-        
-        if(!confirm(`${p.name}을(를) ${price.toLocaleString()}원에 구매하시겠습니까?\n남은 잔액: ${(userBalance-price).toLocaleString()}원`)){
-            return;
-        }
-        
-        // 잔액 차감
-        allUsers[currentUser.minecraftId].balance=userBalance-price;
-        localStorage.setItem('allUsers',JSON.stringify(allUsers));
-        updateUserBalance();
     }
-    
+
     // Firebase에 다운로드 카운트 업데이트
     await updateDownloadInFirebase(pid);
-    
+
     p.downloads++;
     const rec={pluginId:p.id,pluginName:p.name,date:new Date().toLocaleString('ko-KR')};
     if(!currentUser.downloads)currentUser.downloads=[];
     if(!currentUser.downloads.some(d=>d.pluginId===pid))currentUser.downloads.push(rec);
     saveLocal();
-    
+
     // 버전 선택 여부 확인 (PartyPlugin)
     let downloadUrl = p.downloadUrl;
     if(selectedVersion && p.versions && p.versions[selectedVersion]){
         downloadUrl = p.versions[selectedVersion];
         console.log('✅ 선택된 버전:', selectedVersion);
     }
-    
+
     // 더 안정적인 다운로드 처리
     const isMobile = /Android|iPhone|iPad|iPod|Samsung|LG|Windows Phone/i.test(navigator.userAgent);
     try{
         if(isMobile){
-            // 모바일은 새 탭 차단이 심하므로 현재 탭 이동
             window.location.href = downloadUrl;
         }else{
-            // 데스크톱: 새 탭 열기 시도
             const link=document.createElement('a');
             link.href=downloadUrl;
             link.target='_blank';
@@ -944,7 +946,6 @@ async function executeDownload(pid){
             document.body.removeChild(link);
         }
     }catch(e){
-        // 폴백: 숨겨진 iframe
         let iframe=document.getElementById('downloadFrame');
         if(!iframe){
             iframe=document.createElement('iframe');
@@ -954,11 +955,9 @@ async function executeDownload(pid){
         }
         iframe.src=downloadUrl;
     }
-    
     localStorage.setItem('currentUser',JSON.stringify(currentUser));
     renderPlugins();
-    selectedVersion = null; // 버전 선택 초기화
-    // 일반 사용자 다운로드 웹훅 제거 (관리자만 로그)
+    selectedVersion = null;
 }
 
 window.showVersionModal=function(pid){
