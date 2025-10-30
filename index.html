@@ -892,9 +892,14 @@ window.showDetail=function(pid){
 window.closeDetailModal=function(){document.getElementById('detailModal').classList.remove('active')};
 
 window.downloadPlugin=async function(pid,forceDownload){
+    alert('[DEBUG] downloadPlugin 호출: pid = '+pid+' // plugins keys = '+Object.keys(plugins).join(','));
+    const p = plugins[pid];
+    if(!p){
+        alert('플러그인 정보 없음! id='+pid+' // plugins keys='+Object.keys(plugins).join(',')+' // plugins=' + JSON.stringify(plugins));
+        return;
+    }
+    alert('[DEBUG] 플러그인 객체: '+JSON.stringify(p));
     if(!currentUser){if(confirm('로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?')){window.location.href='login.html'}return}
-    const p=plugins[pid];if(!p)return;
-    
     // 버전이 있고 강제 다운로드가 아닌 경우 버전 선택 모달 표시
     if(p.versions && Object.keys(p.versions).length > 0 && !forceDownload){
         pendingDownloadPlugin = pid;
