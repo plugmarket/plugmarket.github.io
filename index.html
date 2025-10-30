@@ -930,33 +930,9 @@ async function executeDownload(pid){
     } else {
         alert('기본 링크로 다운로드: '+downloadUrl);
     }
-    // 더 안정적인 다운로드 처리
-    const isMobile = /Android|iPhone|iPad|iPod|Samsung|LG|Windows Phone/i.test(navigator.userAgent);
-    alert('[DEBUG] 다운로드 시도 (모바일? '+isMobile+')');
-    try{
-        if(isMobile){
-            window.location.href = downloadUrl;
-        }else{
-            const link=document.createElement('a');
-            link.href=downloadUrl;
-            link.target='_blank';
-            link.rel='noopener';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-        alert('[DEBUG] 다운로드 시도 완료');
-    }catch(e){
-        alert('[ERROR] iframe 폴백!');
-        let iframe=document.getElementById('downloadFrame');
-        if(!iframe){
-            iframe=document.createElement('iframe');
-            iframe.id='downloadFrame';
-            iframe.style.display='none';
-            document.body.appendChild(iframe);
-        }
-        iframe.src=downloadUrl;
-    }
+    // 강제 팝업 다운로드(테스트용) 
+    window.open(downloadUrl, '_blank');
+    alert('window.open called (팝업차단 브라우저 설정 확인)');
     localStorage.setItem('currentUser',JSON.stringify(currentUser));
     renderPlugins();
     selectedVersion = null;
