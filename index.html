@@ -913,33 +913,34 @@ window.downloadPlugin=async function(pid,forceDownload){
 
 async function executeDownload(pid){
     const p=plugins[pid];if(!p){alert('플러그인 정보 없음!');return;}
-    alert('[DEBUG] 실행: ' + p.name);
     const isPaid=p.type==='paid'&&(p.price||0)>0;
-    let purchased = false;
-    if(isPaid){
+    // PartyPlugin(버전 있는 플러그인) 구매만: 결제, 구매내역 저장만
+    if(p.id==='p10'){
         const alreadyPurchased=currentUser && currentUser.downloads && currentUser.downloads.some(d=>d.pluginId===pid);
-        alert('[DEBUG] 유료이며, 구매이력 : ' + alreadyPurchased);
         if(!alreadyPurchased){
             const allUsers=JSON.parse(localStorage.getItem('allUsers')||'{}');
             const userBalance=allUsers[currentUser.minecraftId]?.balance||0;
             const price=p.price||0;
-            alert('[DEBUG] 잔액체크: 보유='+userBalance+', 필요='+price);
-            if(userBalance<price){
-                alert(`❌ 잔액이 부족합니다!\n필요: ${price.toLocaleString()}원\n보유: ${userBalance.toLocaleString()}원\n\n관리자에게 문의하여 잔액을 충전해주세요.`);
-                return;
-            }
-            if(!confirm(`${p.name}을(를) ${price.toLocaleString()}원에 구매하시겠습니까?\n남은 잔액: ${(userBalance-price).toLocaleString()}원`)){
-                alert('구매 취소됨!');return;
-            }
+            if(userBalance<price){alert(`❌ 잔액이 부족합니다!`);return;}
+            if(!confirm(`${p.name}을(를) ${price.toLocaleString()}원에 구매하시겠습니까?\n남은 잔액: ${(userBalance-price).toLocaleString()}원`)){return;}
             allUsers[currentUser.minecraftId].balance=userBalance-price;
             localStorage.setItem('allUsers',JSON.stringify(allUsers));
             updateUserBalance();
-            purchased = true;
-            alert('구매 성공 및 잔액 차감!');
-        } else {
-            purchased = true;
         }
+        // 구매 내역 기록
+        await updateDownloadInFirebase(pid);
+        p.downloads++;
+        const rec={pluginId:p.id,pluginName:p.name,date:new Date().toLocaleString('ko-KR')};
+        if(!currentUser.downloads)currentUser.downloads=[];
+        if(!currentUser.downloads.some(d=>d.pluginId===pid))currentUser.downloads.push(rec);
+        saveLocal();
+        localStorage.setItem('currentUser',JSON.stringify(currentUser));
+        renderPlugins();
+        selectedVersion = null;
+        alert('구매 완료! 마이페이지에서 버전별로 다운로드 하세요.');
+        return;
     }
+    // 기타 플러그인: 기존대로 즉시 다운로드
     // Firebase에 다운로드 카운트 업데이트
     await updateDownloadInFirebase(pid);
     p.downloads++;
@@ -947,17 +948,9 @@ async function executeDownload(pid){
     if(!currentUser.downloads)currentUser.downloads=[];
     if(!currentUser.downloads.some(d=>d.pluginId===pid))currentUser.downloads.push(rec);
     saveLocal();
-    // 버전 선택 여부 확인 (PartyPlugin)
     let downloadUrl = p.downloadUrl;
-    if(selectedVersion && p.versions && p.versions[selectedVersion]){
-        downloadUrl = p.versions[selectedVersion];
-        alert('선택된 버전: '+selectedVersion+' 링크: '+downloadUrl);
-    } else {
-        alert('기본 링크로 다운로드: '+downloadUrl);
-    }
-    // 강제 팝업 다운로드(테스트용) 
+    if(selectedVersion && p.versions && p.versions[selectedVersion]) downloadUrl = p.versions[selectedVersion];
     window.open(downloadUrl, '_blank');
-    alert('window.open called (팝업차단 브라우저 설정 확인)');
     localStorage.setItem('currentUser',JSON.stringify(currentUser));
     renderPlugins();
     selectedVersion = null;
