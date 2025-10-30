@@ -870,18 +870,8 @@ window.showDetail=function(pid){
     const rating=currentPlugin.rating||0;
     const priceInfo=currentPlugin.type==='free'?'무료':`${(currentPlugin.price||0).toLocaleString()}원`;
     
-    // 버전 선택 UI (PartyPlugin에만 표시)
+    // 버전 선택 UI 제거 (마이페이지에서만 버전 선택)
     let versionSelector = '';
-    if(currentPlugin.versions && Object.keys(currentPlugin.versions).length > 0){
-        const versionKeys = Object.keys(currentPlugin.versions);
-        versionSelector = `<div style="margin-top:15px;padding:15px;background:var(--review-bg);border-radius:10px;border:2px solid var(--border-color)">
-            <p style="font-weight:bold;color:var(--text-primary);margin-bottom:10px">📦 마인크래프트 버전 선택</p>
-            <select id="versionSelect" style="width:100%;padding:10px;border:2px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-primary);font-size:1em;cursor:pointer">
-                <option value="">기본 버전</option>
-                ${versionKeys.map(v => `<option value="${v}">${v}</option>`).join('')}
-            </select>
-        </div>`;
-    }
     
     document.getElementById('modalBody').innerHTML=`<p><strong>카테고리:</strong> ${currentPlugin.category}</p><p><strong>타입:</strong> ${currentPlugin.type==='free'?'무료':'유료'}</p><p><strong>가격:</strong> ${priceInfo}</p><p><strong>버전:</strong> v${currentPlugin.version}</p><p><strong>평점:</strong> ${rating.toFixed(1)}/5.0</p><p><strong>다운로드:</strong> ${currentPlugin.downloads}회</p><p style="margin-top:15px">${currentPlugin.description}</p>${versionSelector}${h}`;
     const b=document.getElementById('modalAction');
@@ -892,22 +882,10 @@ window.showDetail=function(pid){
 window.closeDetailModal=function(){document.getElementById('detailModal').classList.remove('active')};
 
 window.downloadPlugin=async function(pid,forceDownload){
-    alert('[DEBUG] downloadPlugin 호출: pid = '+pid+' // plugins keys = '+Object.keys(plugins).join(','));
-    const p = plugins[pid];
-    if(!p){
-        alert('플러그인 정보 없음! id='+pid+' // plugins keys='+Object.keys(plugins).join(',')+' // plugins=' + JSON.stringify(plugins));
-        return;
-    }
-    alert('[DEBUG] 플러그인 객체: '+JSON.stringify(p));
     if(!currentUser){if(confirm('로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?')){window.location.href='login.html'}return}
-    // 버전이 있고 강제 다운로드가 아닌 경우 버전 선택 모달 표시
-    if(p.versions && Object.keys(p.versions).length > 0 && !forceDownload){
-        pendingDownloadPlugin = pid;
-        showVersionModal(pid);
-        return;
-    }
+    const p=plugins[pid];if(!p)return;
     
-    // 실제 다운로드 진행
+    // 버전 모달 사용 안 함: 언제나 실행 경로로 진행
     await executeDownload(pid);
 };
 
@@ -956,55 +934,10 @@ async function executeDownload(pid){
     selectedVersion = null;
 }
 
-window.showVersionModal=function(pid){
-    const p=plugins[pid];
-    if(!p || !p.versions) return;
-    
-    const versionKeys = Object.keys(p.versions);
-    let versionHTML = `<p style="margin-bottom:15px;color:var(--text-primary)"><strong>${p.name}</strong> 다운로드할 마인크래프트 버전을 선택해주세요:</p>`;
-    if(p.type==='paid'){
-        const allUsers = JSON.parse(localStorage.getItem('allUsers')||'{}');
-        const userBalance = currentUser? (allUsers[currentUser.minecraftId]?.balance||0) : 0;
-        const priceText = (p.price||0).toLocaleString();
-        versionHTML += `<div style="background:#fff7ed;border:2px solid #fdba74;color:#9a3412;padding:12px;border-radius:8px;margin-bottom:12px">💰 가격: <strong>${priceText}원</strong> · 보유: <strong>${userBalance.toLocaleString()}원</strong></div>`;
-    }
-    versionHTML += `<select id="versionSelectModal" style="width:100%;padding:12px;border:2px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-primary);font-size:1em;cursor:pointer;margin-bottom:15px">
-        <option value="">버전을 골르세요</option>
-        ${versionKeys.map(v => `<option value="${v}">${v}</option>`).join('')}
-    </select>`;
-    // 다운로드(구매) 버튼 동적 추가
-    versionHTML += `<button id="confirmVersionBtn" class="btn btn-primary" style="width:100%;margin-top:10px">다운로드</button>`;
-    document.getElementById('versionModalBody').innerHTML = versionHTML;
-    document.getElementById('versionModal').classList.add('active');
-    // 반드시 명확히 바인딩(한번만 적용됨을 보장)
-    const confirmBtn = document.getElementById('confirmVersionBtn');
-    if(confirmBtn) {
-        confirmBtn.onclick = function(){
-            // 여러 번 클릭 방지용 비활성화
-            confirmBtn.disabled = true;
-            try { confirmVersionDownload(); } finally {setTimeout(()=>{confirmBtn.disabled = false;},800);} // 버튼 재활성화(잠시 후)
-        }
-    }
-};
-
-window.closeVersionModal=function(){
-    document.getElementById('versionModal').classList.remove('active');
-    pendingDownloadPlugin = null;
-    selectedVersion = null;
-};
-
-window.confirmVersionDownload=function(){
-    if(!pendingDownloadPlugin) return;
-    
-    const versionSelect = document.getElementById('versionSelectModal');
-    if(versionSelect){
-        selectedVersion = versionSelect.value || null;
-    }
-    
-    closeVersionModal();
-    closeDetailModal(); // 상세보기 모달도 함께 닫기
-    executeDownload(pendingDownloadPlugin);
-};
+// 버전 모달은 사용하지 않음 (마이페이지에서만 버전 선택)
+window.showVersionModal=function(){alert('버전 선택은 마이페이지에서만 가능합니다.');};
+window.closeVersionModal=function(){};
+window.confirmVersionDownload=function(){};
 
 window.openReviewModal=function(pid){
     currentPlugin=plugins[pid];
