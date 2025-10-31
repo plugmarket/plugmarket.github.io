@@ -86,6 +86,8 @@
         .btn-primary:hover{transform:scale(1.05)}
         .btn-secondary{background:var(--tag-bg);color:#667eea}
         .btn-secondary:hover{background:var(--tag-hover)}
+        .icon{display:inline-flex;align-items:center;justify-content:center;margin-right:8px}
+        .icon svg{width:18px;height:18px;display:inline-block}
         .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;justify-content:center;align-items:center}
         .modal.active{display:flex}
         .modal-content{background:var(--card-bg);padding:40px;border-radius:20px;max-width:600px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.15);transition:all 0.3s ease}
@@ -113,7 +115,7 @@
     </style>
 </head>
 <body>
-    <button class="theme-toggle" onclick="toggleTheme()" title="테마 전환">🌓</button>
+    <button class="theme-toggle" onclick="toggleTheme()" title="테마 전환"></button>
     <div class="container">
         <header>
             <div class="header-left">
@@ -128,15 +130,15 @@
                     <span class="stat-item">📥 <span id="downloadCount">0</span>개</span>
                     <span class="stat-item">⭐ <span id="avgRating">0.0</span></span>
                 </div>
-                <button class="btn-logout" onclick="requestCharge()" style="background:#10b981;margin-bottom:5px">💰 충전 요청</button>
-                <button class="btn-logout" onclick="window.location.href='MyAccount.html'" style="background:#3b82f6;margin-bottom:5px">📜 마이페이지</button>
-                <button class="btn-logout" onclick="logout()">로그아웃</button>
+                <button id="btnCharge" class="btn-logout" onclick="requestCharge()" style="background:#10b981;margin-bottom:5px">충전 요청</button>
+                <button id="btnMyPage" class="btn-logout" onclick="window.location.href='MyAccount.html'" style="background:#3b82f6;margin-bottom:5px">마이페이지</button>
+                <button id="btnLogout" class="btn-logout" onclick="logout()">로그아웃</button>
             </div>
         </header>
         <div class="search-section">
             <div class="search-bar">
                 <input type="text" class="search-input" id="searchInput" placeholder="검색...">
-                <button class="btn-search" onclick="searchPlugins()">🔍</button>
+                <button id="btnSearch" class="btn-search" onclick="searchPlugins()"></button>
             </div>
             <div class="category-tags">
                 <button class="category-tag active" data-category="all">전체</button>
@@ -243,6 +245,24 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
 
     <script>
+// IconaMoon-style inline SVGs (https://github.com/dariushhpg1/IconaMoon)
+function getIcon(name){
+    const commonAttrs='stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+    switch(name){
+        case 'search': return `<svg viewBox="0 0 24 24" ${commonAttrs}><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>`;
+        case 'download': return `<svg viewBox="0 0 24 24" ${commonAttrs}><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 21h14"></path></svg>`;
+        case 'cart': return `<svg viewBox="0 0 24 24" ${commonAttrs}><path d="M6 6h15l-1.5 9H7.5L6 6z"></path><circle cx="9" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle><path d="M6 6L5 3H3"></path></svg>`;
+        case 'info': return `<svg viewBox="0 0 24 24" ${commonAttrs}><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>`;
+        case 'logout': return `<svg viewBox="0 0 24 24" ${commonAttrs}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>`;
+        case 'credit-card': return `<svg viewBox="0 0 24 24" ${commonAttrs}><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20"></path><path d="M6 15h4"></path></svg>`;
+        case 'user': return `<svg viewBox="0 0 24 24" ${commonAttrs}><circle cx="12" cy="8" r="4"></circle><path d="M4 20a8 8 0 0 1 16 0"></path></svg>`;
+        case 'sun': return `<svg viewBox="0 0 24 24" ${commonAttrs}><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>`;
+        case 'moon': return `<svg viewBox="0 0 24 24" ${commonAttrs}><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+        case 'star': return `<svg viewBox="0 0 24 24" ${commonAttrs}><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>`;
+        default: return '';
+    }
+}
+function withIcon(iconName,label){return `<span class="icon">${getIcon(iconName)}</span>${label||''}`}
 // Firebase 초기화
 const firebaseConfig = {
   apiKey: "AIzaSyB_FsD_GqnENdMGeuzH5Q8tICxn_fgu7OQ",
@@ -744,6 +764,13 @@ function showUserInfo(){
         adminBtn.onclick = () => window.location.href = 'admin.html';
         document.querySelector('.user-info').appendChild(adminBtn);
     }
+    // 헤더 버튼 아이콘 적용
+    const btnCharge=document.getElementById('btnCharge');
+    const btnMyPage=document.getElementById('btnMyPage');
+    const btnLogout=document.getElementById('btnLogout');
+    if(btnCharge) btnCharge.innerHTML=withIcon('credit-card','충전 요청');
+    if(btnMyPage) btnMyPage.innerHTML=withIcon('user','마이페이지');
+    if(btnLogout) btnLogout.innerHTML=withIcon('logout','로그아웃');
 }
 
 function updateUserBalance(){
@@ -829,7 +856,7 @@ function renderPlugins(){
         const badgeText=isFree?'무료':`${(p.price||0).toLocaleString()}원`;
         const badgeColor=isFree?'#10b981':'#f59e0b';
         const versionInfo = (p.versions && Object.keys(p.versions).length > 0) ? `<p class="plugin-version">v${p.version} • ${Object.keys(p.versions).length}개 마인크래프트 버전 지원</p>` : `<p class="plugin-version">v${p.version}</p>`;
-        return`<div class="plugin-card"><div style="display:flex;justify-content:space-between"><div><h3 class="plugin-title">${p.name}</h3><span class="plugin-category">${p.category}</span></div><span class="plugin-badge" style="background:${badgeColor}">${badgeText}</span></div><p class="plugin-description">${p.description}</p>${versionInfo}<div class="plugin-rating"><span class="stars">${s}</span><span class="rating-count">${(p.rating||0).toFixed(1)}(${c})</span></div><p class="plugin-downloads">📥 ${p.downloads}회</p>${i?'<div style="background:#10b981;color:white;padding:8px;border-radius:8px;text-align:center;margin:10px 0">✓ 다운로드 완료</div>':''}<div class="plugin-footer"><button class="btn btn-primary" data-plugin-id="${p.id}" data-action="download">${i?'재다운':isFree?'다운로드':'구매'}</button><button class="btn btn-secondary" data-plugin-id="${p.id}" data-action="detail">상세보기</button></div></div>`
+        return`<div class="plugin-card"><div style="display:flex;justify-content:space-between"><div><h3 class="plugin-title">${p.name}</h3><span class="plugin-category">${p.category}</span></div><span class="plugin-badge" style="background:${badgeColor}">${badgeText}</span></div><p class="plugin-description">${p.description}</p>${versionInfo}<div class="plugin-rating"><span class="stars">${s}</span><span class="rating-count">${(p.rating||0).toFixed(1)}(${c})</span></div><p class="plugin-downloads">${withIcon('download',`${p.downloads}회`)}</p>${i?'<div style="background:#10b981;color:white;padding:8px;border-radius:8px;text-align:center;margin:10px 0">✓ 다운로드 완료</div>':''}<div class="plugin-footer"><button class="btn btn-primary" data-plugin-id="${p.id}" data-action="download">${withIcon(isFree?'download':'cart', i?'재다운':isFree?'다운로드':'구매')}</button><button class="btn btn-secondary" data-plugin-id="${p.id}" data-action="detail">${withIcon('info','상세보기')}</button></div></div>`
     }).join('');
     setupPluginCardListeners();
 }
@@ -875,7 +902,7 @@ window.showDetail=function(pid){
     
     document.getElementById('modalBody').innerHTML=`<p><strong>카테고리:</strong> ${currentPlugin.category}</p><p><strong>타입:</strong> ${currentPlugin.type==='free'?'무료':'유료'}</p><p><strong>가격:</strong> ${priceInfo}</p><p><strong>버전:</strong> v${currentPlugin.version}</p><p><strong>평점:</strong> ${rating.toFixed(1)}/5.0</p><p><strong>다운로드:</strong> ${currentPlugin.downloads}회</p><p style="margin-top:15px">${currentPlugin.description}</p>${versionSelector}${h}`;
     const b=document.getElementById('modalAction');
-    if(i){b.textContent=u?'리뷰 수정':'리뷰 작성';b.onclick=()=>openReviewModal(pid)}else{b.textContent=currentPlugin.type==='free'?'다운로드':'구매';b.onclick=()=>downloadPlugin(pid)}
+    if(i){b.innerHTML=withIcon('star',u?'리뷰 수정':'리뷰 작성');b.onclick=()=>openReviewModal(pid)}else{b.innerHTML=withIcon(currentPlugin.type==='free'?'download':'cart',currentPlugin.type==='free'?'다운로드':'구매');b.onclick=()=>downloadPlugin(pid)}
     document.getElementById('detailModal').classList.add('active');
 };
 
@@ -1076,7 +1103,7 @@ window.showHistory=function(){
                     </div>
                     <p style="color:var(--text-tertiary);font-size:0.85em;margin-top:8px">📅 ${x.date}</p>
                 </div>
-                <button class="btn btn-primary" onclick="reDownloadPlugin('${x.pluginId}')" style="padding:12px 24px;white-space:nowrap">📥 다시 다운로드</button>
+                <button class="btn btn-primary" onclick="reDownloadPlugin('${x.pluginId}')" style="padding:12px 24px;white-space:nowrap">${withIcon('download','다시 다운로드')}</button>
             </div>`;
         }).join('');
     }
@@ -1114,9 +1141,9 @@ function toggleTheme(){
 function updateThemeIcon(){
     const toggle=document.querySelector('.theme-toggle');
     if(document.body.classList.contains('dark-mode')){
-        toggle.textContent='☀️';
+        toggle.innerHTML=withIcon('sun','');
     }else{
-        toggle.textContent='🌓';
+        toggle.innerHTML=withIcon('moon','');
     }
 }
 
@@ -1130,6 +1157,8 @@ function loadTheme(){
 
 document.addEventListener('DOMContentLoaded',()=>{
     loadTheme();
+    const searchBtn=document.getElementById('btnSearch');
+    if(searchBtn){ searchBtn.innerHTML=withIcon('search',''); }
     init();
 });
     </script>
