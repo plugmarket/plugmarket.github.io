@@ -892,20 +892,19 @@ window.downloadPlugin=async function(pid,forceDownload){
 async function executeDownload(pid){
     const p=plugins[pid];if(!p){alert('플러그인 정보 없음!');return;}
     const isPaid=p.type==='paid'&&(p.price||0)>0;
-    // PartyPlugin(버전 있는 플러그인) 구매만: 결제, 구매내역 저장만
+    const alreadyPurchased=currentUser && currentUser.downloads && currentUser.downloads.some(d=>d.pluginId===pid);
+    // PartyPlugin(버전 있는 플러그인) 특별 처리: 구매만 하고 마이페이지에서 버전 다운로드
     if(p.id==='p10'){
-        const alreadyPurchased=currentUser && currentUser.downloads && currentUser.downloads.some(d=>d.pluginId===pid);
         if(!alreadyPurchased){
             const allUsers=JSON.parse(localStorage.getItem('allUsers')||'{}');
             const userBalance=allUsers[currentUser.minecraftId]?.balance||0;
             const price=p.price||0;
-            if(userBalance<price){alert(`❌ 잔액이 부족합니다!`);return;}
+            if(userBalance<price){alert('❌ 잔액이 부족합니다!');return;}
             if(!confirm(`${p.name}을(를) ${price.toLocaleString()}원에 구매하시겠습니까?\n남은 잔액: ${(userBalance-price).toLocaleString()}원`)){return;}
             allUsers[currentUser.minecraftId].balance=userBalance-price;
             localStorage.setItem('allUsers',JSON.stringify(allUsers));
             updateUserBalance();
         }
-        // 구매 내역 기록
         await updateDownloadInFirebase(pid);
         p.downloads++;
         const rec={pluginId:p.id,pluginName:p.name,date:new Date().toLocaleString('ko-KR')};
@@ -914,11 +913,22 @@ async function executeDownload(pid){
         saveLocal();
         localStorage.setItem('currentUser',JSON.stringify(currentUser));
         renderPlugins();
-        selectedVersion = null;
+        selectedVersion=null;
         alert('구매 완료! 마이페이지에서 버전별로 다운로드 하세요.');
         return;
     }
-    // 기타 플러그인: 기존대로 즉시 다운로드
+    // 일반 유료 플러그인: 처음 구매 시 잔액 차감 후 즉시 다운로드
+    if(isPaid && !alreadyPurchased){
+        const allUsers=JSON.parse(localStorage.getItem('allUsers')||'{}');
+        const userBalance=allUsers[currentUser.minecraftId]?.balance||0;
+        const price=p.price||0;
+        if(userBalance<price){alert('❌ 잔액이 부족합니다!');return;}
+        if(!confirm(`${p.name}을(를) ${price.toLocaleString()}원에 구매하시겠습니까?\n남은 잔액: ${(userBalance-price).toLocaleString()}원`)){return;}
+        allUsers[currentUser.minecraftId].balance=userBalance-price;
+        localStorage.setItem('allUsers',JSON.stringify(allUsers));
+        updateUserBalance();
+    }
+    // 다운로드 처리
     // Firebase에 다운로드 카운트 업데이트
     await updateDownloadInFirebase(pid);
     p.downloads++;
