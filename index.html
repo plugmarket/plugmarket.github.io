@@ -280,7 +280,13 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
-const analytics = firebase.analytics();
+// Analytics는 선택적으로 사용 (오류 방지)
+let analytics = null;
+try {
+    analytics = firebase.analytics();
+} catch(e) {
+    console.log('Analytics 초기화 건너뜀');
+}
 
 let plugins={},currentUser=null,currentFilter='all',currentCategory='all',currentSort='popular',selectedRating=0,currentPlugin=null,discordMembers=[],selectedVersion=null,pendingDownloadPlugin=null;
 const WEBHOOK='https://discord.com/api/webhooks/1425431420158869584/_H7Fr8vnzydAuqVoQ8Sbm5c2wHlb7EL8XXAIadq1waQGaaPCvJYGjhQotyWU4DHY0-zv';
