@@ -357,6 +357,7 @@ async function handleDiscordImplicitCallback(){
             }
             localStorage.setItem('allUsers',JSON.stringify(allUsers));
             localStorage.setItem('currentUser',JSON.stringify(currentUser));
+            await setupUserBalanceListener();
             window.history.replaceState({},document.title,window.location.pathname);
             showUserInfo();
             renderPlugins();
@@ -429,6 +430,19 @@ async function initializeFirebaseData(){
     }catch(e){
         console.log('ℹ️ Firebase 초기화 불가 - localStorage만 사용');
     }
+}
+
+async function ensureFirebasePlugin(pluginId){
+    try{
+        const p=plugins[pluginId];
+        if(!p) return;
+        await database.ref(`plugins/${pluginId}`).update({
+            name:p.name,
+            downloads:p.downloads||0,
+            price:p.price||0,
+            type:p.type||'free'
+        });
+    }catch(e){}
 }
 
 // Firebase에 다운로드 카운트 업데이트
@@ -577,6 +591,25 @@ function loadLocal(){
                 saveLocal();
                 console.log('✅ FriendPlugin added');
             }
+            if(!plugins.p13){
+                plugins.p13={
+                    id:'p13',
+                    name:'HousingSystem',
+                    description:'하우징 시스템',
+                    version:'1.5',
+                    type:'free',
+                    category:'게임플레이',
+                    downloads:0,
+                    rating:0,
+                    reviews:{},
+                    downloadUrl:'https://www.dropbox.com/scl/fi/aex1kbkoskc0mqyrm784g/Housing_system-1.5-paper.jar?rlkey=tnj1pnr1pv66g8lhe7a63cng9&st=q034n5pn&dl=1'
+                };
+                saveLocal();
+                console.log('✅ HousingSystem added');
+            }else{
+                plugins.p13.downloadUrl='https://www.dropbox.com/scl/fi/aex1kbkoskc0mqyrm784g/Housing_system-1.5-paper.jar?rlkey=tnj1pnr1pv66g8lhe7a63cng9&st=q034n5pn&dl=1';
+                saveLocal();
+            }
             console.log('✅ Loaded plugins from localStorage:', Object.keys(plugins).length);
         }catch(e){
             console.error('Error parsing localStorage:', e);
@@ -607,6 +640,18 @@ function loadLocal(){
                 reviews:{},
                 downloadUrl:"https://www.dropbox.com/scl/fi/6tr94vp2peqjns0w0c6ol/firend_plugin-1.1-paper.jar?rlkey=j0vkpwugnhjvla7npy00f9h6e&st=tvmxuubu&dl=1"
             };
+            plugins.p13={
+                id:'p13',
+                name:'HousingSystem',
+                description:'하우징 시스템',
+                version:'1.5',
+                type:'free',
+                category:'게임플레이',
+                downloads:0,
+                rating:0,
+                reviews:{},
+                downloadUrl:'https://www.dropbox.com/scl/fi/aex1kbkoskc0mqyrm784g/Housing_system-1.5-paper.jar?rlkey=tnj1pnr1pv66g8lhe7a63cng9&st=q034n5pn&dl=1'
+            };
             saveLocal();
         }
     }else{
@@ -636,6 +681,18 @@ function loadLocal(){
             rating:0,
             reviews:{},
             downloadUrl:"https://www.dropbox.com/scl/fi/6tr94vp2peqjns0w0c6ol/firend_plugin-1.1-paper.jar?rlkey=j0vkpwugnhjvla7npy00f9h6e&st=tvmxuubu&dl=1"
+        };
+        plugins.p13={
+            id:'p13',
+            name:'HousingSystem',
+            description:'하우징 시스템',
+            version:'1.5',
+            type:'free',
+            category:'게임플레이',
+            downloads:0,
+            rating:0,
+            reviews:{},
+            downloadUrl:'https://www.dropbox.com/scl/fi/aex1kbkoskc0mqyrm784g/Housing_system-1.5-paper.jar?rlkey=tnj1pnr1pv66g8lhe7a63cng9&st=q034n5pn&dl=1'
         };
         saveLocal();
         console.log('✅ Initialized plugins with default data');
@@ -716,10 +773,12 @@ async function init(){
     await ensureFirebaseAuth();
     await loadDownloadsFromFirebase();
     setupFirebaseListeners();
+    await ensureFirebasePlugin('p13');
     
     // currentUser가 있으면 (OAuth 콜백에서 설정되거나 localStorage에 저장된 경우)
     if(currentUser && currentUser.minecraftId){
         // 잔액 즉시 업데이트
+        setupUserBalanceListener();
         updateUserBalance();
         showUserInfo();
         renderPlugins();
@@ -730,7 +789,7 @@ async function init(){
             try {
                 currentUser=JSON.parse(u);
                 console.log('✅ 기존 사용자 로드:', currentUser.minecraftId);
-                // 잔액 즉시 업데이트
+                setupUserBalanceListener();
                 updateUserBalance();
                 showUserInfo();
                 renderPlugins();
@@ -825,6 +884,7 @@ async function handleOAuthCallback(){
         // URL에서 code 제거
         window.history.replaceState({},document.title,window.location.pathname);
         
+        await setupUserBalanceListener();
         showUserInfo();
         renderPlugins();
         
@@ -897,6 +957,20 @@ function toggleMenuDropdown(){
 }
 function gotoMyPage(){ window.location.href='MyAccount.html'; }
 function openAdmin(){ window.location.href='admin.html'; }
+
+async function setupUserBalanceListener(){
+    if(!currentUser) return;
+    try{
+        database.ref(`users/${currentUser.minecraftId}/balance`).on('value',(snapshot)=>{
+            const balance=snapshot.val()||0;
+            const allUsers=JSON.parse(localStorage.getItem('allUsers')||'{}');
+            if(!allUsers[currentUser.minecraftId]) allUsers[currentUser.minecraftId]={minecraftId:currentUser.minecraftId,balance:0};
+            allUsers[currentUser.minecraftId].balance=balance;
+            localStorage.setItem('allUsers',JSON.stringify(allUsers));
+            updateUserBalance();
+        });
+    }catch(e){}
+}
 
 function setupPluginCardListeners(){
     document.querySelectorAll('.btn[data-action="download"]').forEach(btn=>{
