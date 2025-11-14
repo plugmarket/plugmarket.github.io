@@ -89,6 +89,8 @@
         .header-actions{display:flex;gap:10px;align-items:center}
         .chip-btn{background:#f5f5f5;border:1px solid var(--border-color);color:#111;padding:10px 16px;border-radius:14px;cursor:pointer;box-shadow:0 2px 8px var(--shadow);font-size:0.95em}
         .chip-btn:hover{background:#efefef}
+        .user-actions{display:none;gap:10px;margin-top:10px;flex-wrap:wrap}
+        .user-actions.show{display:flex}
         .icon{display:inline-flex;align-items:center;justify-content:center;margin-right:8px}
         .icon svg{width:18px;height:18px;display:inline-block}
         .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;justify-content:center;align-items:center}
@@ -125,11 +127,11 @@
                 <h1>🎮 Plugin Store</h1>
                 <p class="subtitle">마인크래프트 플러그인 스토어</p>
             </div>
-            <div class="header-actions">
-                <button id="btnLogin" class="chip-btn" onclick="openLoginModal()">로그인</button>
-                <button id="btnMenu" class="chip-btn">☰</button>
-            </div>
             <div class="user-info" id="userInfo">
+                <div class="header-actions">
+                    <button id="btnLogin" class="chip-btn" onclick="openLoginModal()">로그인</button>
+                    <button id="btnMenu" class="chip-btn" onclick="toggleUserActions()">☰</button>
+                </div>
                 <p class="user-name" id="userName"></p>
                 <p class="user-id" id="userIdDisplay"></p>
                 <div class="user-stats">
@@ -139,9 +141,11 @@
                     <span class="stat-item"><span class="icon" data-icon="download"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 21h14"></path></svg></span> <span id="downloadCount">0</span>개</span>
                     <span class="stat-item"><span class="icon" data-icon="star"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></span> <span id="avgRating">0.0</span></span>
                 </div>
-                <button id="btnCharge" class="btn-logout" onclick="requestCharge()" style="background:#10b981;margin-bottom:5px">충전 요청</button>
-                <button id="btnMyPage" class="btn-logout" onclick="window.location.href='MyAccount.html'" style="background:#3b82f6;margin-bottom:5px">마이페이지</button>
-                <button id="btnLogout" class="btn-logout" onclick="logout()">로그아웃</button>
+                <div id="userActions" class="user-actions">
+                    <button id="btnCharge" class="btn-logout" onclick="requestCharge()" style="background:#10b981;margin-bottom:5px">충전 요청</button>
+                    <button id="btnMyPage" class="btn-logout" onclick="window.location.href='MyAccount.html'" style="background:#3b82f6;margin-bottom:5px">마이페이지</button>
+                    <button id="btnLogout" class="btn-logout" onclick="logout()">로그아웃</button>
+                </div>
             </div>
         </header>
         <div class="search-section">
@@ -834,7 +838,8 @@ function showUserInfo(){
         adminBtn.style.marginTop = '10px';
         adminBtn.textContent = '⚙️ 관리 툴';
         adminBtn.onclick = () => window.location.href = 'admin.html';
-        document.querySelector('.user-info').appendChild(adminBtn);
+        const ua=document.getElementById('userActions');
+        (ua||document.querySelector('.user-info')).appendChild(adminBtn);
     }
     // 헤더 버튼 아이콘 적용
     const btnCharge=document.getElementById('btnCharge');
@@ -845,6 +850,8 @@ function showUserInfo(){
     if(btnMyPage) btnMyPage.innerHTML=withIcon('user','마이페이지');
     if(btnLogout) btnLogout.innerHTML=withIcon('logout','로그아웃');
     if(btnLogin) btnLogin.style.display='none';
+    const ua=document.getElementById('userActions');
+    if(ua) ua.classList.remove('show');
 }
 
 function updateUserBalance(){
@@ -869,6 +876,11 @@ function setupListeners(){
     document.getElementById('sortSelect').addEventListener('change',function(){currentSort=this.value;renderPlugins()});
     document.getElementById('searchInput').addEventListener('keypress',function(e){if(e.key==='Enter')searchPlugins()});
     document.querySelectorAll('#starRating .star').forEach(s=>s.addEventListener('click',function(){selectedRating=parseInt(this.dataset.rating);document.querySelectorAll('#starRating .star').forEach((x,i)=>{if(i<selectedRating)x.classList.add('active');else x.classList.remove('active')})}));
+}
+
+function toggleUserActions(){
+    const ua=document.getElementById('userActions');
+    if(ua){ ua.classList.toggle('show'); }
 }
 
 function setupPluginCardListeners(){
@@ -907,6 +919,8 @@ window.logout=function(){
         if(btnLogin) btnLogin.style.display='inline-block';
         const btnLogout=document.getElementById('btnLogout');
         if(btnLogout) btnLogout.style.display='none';
+        const ua=document.getElementById('userActions');
+        if(ua) ua.classList.remove('show');
         renderPlugins();
     }
 };
