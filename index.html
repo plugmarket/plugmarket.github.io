@@ -91,6 +91,14 @@
         .chip-btn:hover{background:#efefef}
         .user-actions{display:none;gap:10px;margin-top:10px;flex-wrap:wrap}
         .user-actions.show{display:flex}
+        .user-info{position:relative}
+        .menu-wrapper{position:relative}
+        .menu-dropdown{position:absolute;right:0;top:42px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:12px;box-shadow:0 8px 20px var(--shadow);padding:10px;min-width:200px;display:none;z-index:1000}
+        .menu-dropdown.show{display:block}
+        .menu-item{padding:8px 12px;border-radius:8px;color:var(--text-primary);cursor:pointer}
+        .menu-item:hover{background:var(--tag-hover)}
+        .menu-item.disabled{cursor:default;color:var(--text-secondary)}
+        .menu-item.danger{color:#ef4444}
         .icon{display:inline-flex;align-items:center;justify-content:center;margin-right:8px}
         .icon svg{width:18px;height:18px;display:inline-block}
         .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;justify-content:center;align-items:center}
@@ -130,7 +138,15 @@
             <div class="user-info" id="userInfo">
                 <div class="header-actions">
                     <button id="btnLogin" class="chip-btn" onclick="openLoginModal()">로그인</button>
-                    <button id="btnMenu" class="chip-btn" onclick="toggleUserActions()">☰</button>
+                    <div class="menu-wrapper">
+                        <button id="btnMenu" class="chip-btn" onclick="toggleMenuDropdown()">☰</button>
+                        <div id="menuDropdown" class="menu-dropdown">
+                            <div class="menu-item" onclick="gotoMyPage()">마이페이지</div>
+                            <div class="menu-item disabled" id="menuBalance">보유금액: 0원</div>
+                            <div class="menu-item" id="menuAdmin" style="display:none" onclick="openAdmin()">관리 툴</div>
+                            <div class="menu-item danger" onclick="logout()">로그아웃</div>
+                        </div>
+                    </div>
                 </div>
                 <p class="user-name" id="userName"></p>
                 <p class="user-id" id="userIdDisplay"></p>
@@ -141,11 +157,7 @@
                     <span class="stat-item"><span class="icon" data-icon="download"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 21h14"></path></svg></span> <span id="downloadCount">0</span>개</span>
                     <span class="stat-item"><span class="icon" data-icon="star"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></span> <span id="avgRating">0.0</span></span>
                 </div>
-                <div id="userActions" class="user-actions">
-                    <button id="btnCharge" class="btn-logout" onclick="requestCharge()" style="background:#10b981;margin-bottom:5px">충전 요청</button>
-                    <button id="btnMyPage" class="btn-logout" onclick="window.location.href='MyAccount.html'" style="background:#3b82f6;margin-bottom:5px">마이페이지</button>
-                    <button id="btnLogout" class="btn-logout" onclick="logout()">로그아웃</button>
-                </div>
+                
             </div>
         </header>
         <div class="search-section">
@@ -831,16 +843,8 @@ function showUserInfo(){
     
     // 관리자 버튼 추가 (관리자인 경우)
     const isAdmin = checkAdmin();
-    if(isAdmin && !document.getElementById('adminBtn')) {
-        const adminBtn = document.createElement('button');
-        adminBtn.id = 'adminBtn';
-        adminBtn.className = 'btn-logout';
-        adminBtn.style.marginTop = '10px';
-        adminBtn.textContent = '⚙️ 관리 툴';
-        adminBtn.onclick = () => window.location.href = 'admin.html';
-        const ua=document.getElementById('userActions');
-        (ua||document.querySelector('.user-info')).appendChild(adminBtn);
-    }
+    const menuAdmin=document.getElementById('menuAdmin');
+    if(menuAdmin){ menuAdmin.style.display = isAdmin ? 'block' : 'none'; }
     // 헤더 버튼 아이콘 적용
     const btnCharge=document.getElementById('btnCharge');
     const btnMyPage=document.getElementById('btnMyPage');
@@ -850,8 +854,8 @@ function showUserInfo(){
     if(btnMyPage) btnMyPage.innerHTML=withIcon('user','마이페이지');
     if(btnLogout) btnLogout.innerHTML=withIcon('logout','로그아웃');
     if(btnLogin) btnLogin.style.display='none';
-    const ua=document.getElementById('userActions');
-    if(ua) ua.classList.remove('show');
+    const dd=document.getElementById('menuDropdown');
+    if(dd) dd.classList.remove('show');
 }
 
 function updateUserBalance(){
@@ -862,6 +866,8 @@ function updateUserBalance(){
     if(balanceElement) {
         balanceElement.textContent = userBalance.toLocaleString();
     }
+    const menuBalance=document.getElementById('menuBalance');
+    if(menuBalance){ menuBalance.textContent=`보유금액: ${userBalance.toLocaleString()}원`; }
 }
 
 function checkAdmin(){
@@ -882,6 +888,13 @@ function toggleUserActions(){
     const ua=document.getElementById('userActions');
     if(ua){ ua.classList.toggle('show'); }
 }
+
+function toggleMenuDropdown(){
+    const dd=document.getElementById('menuDropdown');
+    if(dd){ dd.classList.toggle('show'); }
+}
+function gotoMyPage(){ window.location.href='MyAccount.html'; }
+function openAdmin(){ window.location.href='admin.html'; }
 
 function setupPluginCardListeners(){
     document.querySelectorAll('.btn[data-action="download"]').forEach(btn=>{
@@ -919,8 +932,8 @@ window.logout=function(){
         if(btnLogin) btnLogin.style.display='inline-block';
         const btnLogout=document.getElementById('btnLogout');
         if(btnLogout) btnLogout.style.display='none';
-        const ua=document.getElementById('userActions');
-        if(ua) ua.classList.remove('show');
+        const dd=document.getElementById('menuDropdown');
+        if(dd) dd.classList.remove('show');
         renderPlugins();
     }
 };
