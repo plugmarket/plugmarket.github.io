@@ -445,6 +445,17 @@ async function ensureFirebasePlugin(pluginId){
     }catch(e){}
 }
 
+async function upsertFirebasePlugins(){
+    try{
+        const updates={};
+        Object.keys(plugins).forEach(id=>{
+            const p=plugins[id];
+            updates[`plugins/${id}`]={name:p.name,downloads:p.downloads||0,price:p.price||0,type:p.type||'free'};
+        });
+        await database.ref().update(updates);
+    }catch(e){}
+}
+
 // Firebase에 다운로드 카운트 업데이트
 async function updateDownloadInFirebase(pluginId){
     try{
@@ -773,7 +784,7 @@ async function init(){
     await ensureFirebaseAuth();
     await loadDownloadsFromFirebase();
     setupFirebaseListeners();
-    await ensureFirebasePlugin('p13');
+    await upsertFirebasePlugins();
     
     // currentUser가 있으면 (OAuth 콜백에서 설정되거나 localStorage에 저장된 경우)
     if(currentUser && currentUser.minecraftId){
