@@ -996,6 +996,14 @@ function setupPluginCardListeners(){
             downloadPlugin(pluginId);
         });
     });
+    document.querySelectorAll('.btn[data-action="redownload"]').forEach(btn=>{
+        btn.addEventListener('click',function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            const pluginId=this.dataset.pluginId;
+            redownloadPlugin(pluginId);
+        });
+    });
     document.querySelectorAll('.btn[data-action="login"]').forEach(btn=>{
         btn.addEventListener('click',function(e){
             e.preventDefault();
@@ -1063,8 +1071,8 @@ function renderPlugins(){
         const versionInfo = (p.versions && Object.keys(p.versions).length > 0) ? `<p class="plugin-version">v${p.version} • ${Object.keys(p.versions).length}개 마인크래프트 버전 지원</p>` : `<p class="plugin-version">v${p.version}</p>`;
         const isLoggedIn=!!currentUser;
         const primaryLabel=!isLoggedIn?'로그인':(i?'재다운':(isFree?'다운로드':'구매'));
-        const primaryIcon=!isLoggedIn?'user':(isFree?'download':'cart');
-        const primaryAction=!isLoggedIn?'login':'download';
+        const primaryIcon=!isLoggedIn?'user':'download';
+        const primaryAction=!isLoggedIn?'login':(i?'redownload':'download');
         return`<div class="plugin-card"><div style="display:flex;justify-content:space-between"><div><h3 class="plugin-title">${p.name}</h3><span class="plugin-category">${p.category}</span></div><span class="plugin-badge" style="background:${badgeColor}">${badgeText}</span></div><p class="plugin-description">${p.description}</p>${versionInfo}<div class="plugin-rating"><span class="stars">${s}</span><span class="rating-count">${(p.rating||0).toFixed(1)}(${c})</span></div><p class="plugin-downloads">${withIcon('download',`${p.downloads}회`)}</p>${i?'<div style="background:#10b981;color:white;padding:8px;border-radius:8px;text-align:center;margin:10px 0">✓ 다운로드 완료</div>':''}<div class="plugin-footer"><button class="btn btn-primary" data-plugin-id="${p.id}" data-action="${primaryAction}">${withIcon(primaryIcon,primaryLabel)}</button><button class="btn btn-secondary" data-plugin-id="${p.id}" data-action="detail">${withIcon('info','상세보기')}</button></div></div>`
     }).join('');
     setupPluginCardListeners();
@@ -1127,10 +1135,18 @@ window.downloadPlugin=async function(pid,forceDownload){
     await executeDownload(pid);
 };
 
+window.redownloadPlugin=function(pid){
+    if(!currentUser){openLoginModal();return}
+    const p=plugins[pid];if(!p)return;
+    let downloadUrl=p.downloadUrl;
+    window.open(downloadUrl,'_blank');
+};
+
 async function executeDownload(pid){
     const p=plugins[pid];if(!p){alert('플러그인 정보 없음!');return;}
     const isPaid=p.type==='paid'&&(p.price||0)>0;
     const alreadyPurchased=currentUser && currentUser.downloads && currentUser.downloads.some(d=>d.pluginId===pid);
+    const firstTimeDownload=!alreadyPurchased;
     // PartyPlugin(버전 있는 플러그인) 특별 처리: 구매만 하고 마이페이지에서 버전 다운로드
     if(p.id==='p10'){
         if(!alreadyPurchased){
@@ -1142,18 +1158,22 @@ async function executeDownload(pid){
             allUsers[currentUser.minecraftId].balance=userBalance-price;
             localStorage.setItem('allUsers',JSON.stringify(allUsers));
             updateUserBalance();
+            await updateDownloadInFirebase(pid);
+            p.downloads++;
+            const rec={pluginId:p.id,pluginName:p.name,date:new Date().toLocaleString('ko-KR')};
+            if(!currentUser.downloads)currentUser.downloads=[];
+            if(!currentUser.downloads.some(d=>d.pluginId===pid))currentUser.downloads.push(rec);
+            saveLocal();
+            localStorage.setItem('currentUser',JSON.stringify(currentUser));
+            renderPlugins();
+            selectedVersion=null;
+            alert('구매 완료! 마이페이지에서 버전별로 다운로드 하세요.');
+            return;
+        } else {
+            let downloadUrl=p.downloadUrl;
+            window.open(downloadUrl,'_blank');
+            return;
         }
-        await updateDownloadInFirebase(pid);
-        p.downloads++;
-        const rec={pluginId:p.id,pluginName:p.name,date:new Date().toLocaleString('ko-KR')};
-        if(!currentUser.downloads)currentUser.downloads=[];
-        if(!currentUser.downloads.some(d=>d.pluginId===pid))currentUser.downloads.push(rec);
-        saveLocal();
-        localStorage.setItem('currentUser',JSON.stringify(currentUser));
-        renderPlugins();
-        selectedVersion=null;
-        alert('구매 완료! 마이페이지에서 버전별로 다운로드 하세요.');
-        return;
     }
     // 일반 유료 플러그인: 처음 구매 시 잔액 차감 후 즉시 다운로드
     if(isPaid && !alreadyPurchased){
@@ -1167,9 +1187,10 @@ async function executeDownload(pid){
         updateUserBalance();
     }
     // 다운로드 처리
-    // Firebase에 다운로드 카운트 업데이트
-    await updateDownloadInFirebase(pid);
-    p.downloads++;
+    if(firstTimeDownload){
+        await updateDownloadInFirebase(pid);
+        p.downloads++;
+    }
     const rec={pluginId:p.id,pluginName:p.name,date:new Date().toLocaleString('ko-KR')};
     if(!currentUser.downloads)currentUser.downloads=[];
     if(!currentUser.downloads.some(d=>d.pluginId===pid))currentUser.downloads.push(rec);
