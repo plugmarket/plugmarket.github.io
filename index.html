@@ -357,6 +357,7 @@ async function handleDiscordImplicitCallback(){
             }
             localStorage.setItem('allUsers',JSON.stringify(allUsers));
             localStorage.setItem('currentUser',JSON.stringify(currentUser));
+            verifyDiscordMembership();
             await setupUserBalanceListener();
             window.history.replaceState({},document.title,window.location.pathname);
             showUserInfo();
@@ -713,6 +714,13 @@ function loadLocal(){
         console.log('✅ Initialized plugins with default data');
     }
 }
+
+function verifyDiscordMembership(){
+    if(!currentUser||!currentUser.discordId||!Array.isArray(discordMembers)) return;
+    const ok=discordMembers.some(m=>m.id===currentUser.discordId);
+    currentUser.verified=!!ok;
+    localStorage.setItem('currentUser',JSON.stringify(currentUser));
+}
 function saveLocal(){localStorage.setItem('plugins',JSON.stringify(plugins))}
 async function sendDiscord(msg){try{await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"📥 알림",description:msg,color:6750054,timestamp:new Date().toISOString()}]})})}catch(e){}}
 
@@ -785,16 +793,15 @@ async function init(){
     handleOAuthCallback();
     
     // Firebase에서 다운로드 카운트 로드 및 실시간 동기화 시작
-    await ensureFirebaseAuth();
     await loadDownloadsFromFirebase();
     setupFirebaseListeners();
     await upsertFirebasePlugins();
     
     // currentUser가 있으면 (OAuth 콜백에서 설정되거나 localStorage에 저장된 경우)
     if(currentUser && currentUser.minecraftId){
-        // 잔액 즉시 업데이트
         setupUserBalanceListener();
         updateUserBalance();
+        verifyDiscordMembership();
         showUserInfo();
         renderPlugins();
     }else{
@@ -806,6 +813,7 @@ async function init(){
                 console.log('✅ 기존 사용자 로드:', currentUser.minecraftId);
                 setupUserBalanceListener();
                 updateUserBalance();
+                verifyDiscordMembership();
                 showUserInfo();
                 renderPlugins();
             } catch(e) {
@@ -915,7 +923,8 @@ async function handleOAuthCallback(){
 function showUserInfo(){
     const displayName = currentUser.actualMcName || currentUser.username || 'User';
     document.getElementById('userName').textContent=displayName+'님';
-    document.getElementById('userIdDisplay').textContent='MC: '+displayName;
+    const dc=currentUser.discordId?(' · DC: '+currentUser.discordId+(currentUser.verified?' 인증됨':'')) : '';
+    document.getElementById('userIdDisplay').textContent='MC: '+displayName+dc;
     updateUserStats();
     updateUserBalance();
     
