@@ -733,6 +733,16 @@ async function setupUserDownloadsListener(){
             localStorage.setItem('currentUser',JSON.stringify(currentUser));
             updateUserStats();
         });
+        if(currentUser.discordId){
+            database.ref(`users/${currentUser.discordId}/downloads`).on('value',(snapshot)=>{
+                const val=snapshot.val();
+                if(!val) return;
+                const list=Array.isArray(val)?val:Object.values(val);
+                currentUser.downloads=list;
+                localStorage.setItem('currentUser',JSON.stringify(currentUser));
+                updateUserStats();
+            });
+        }
     }catch(e){}
 }
 
@@ -745,7 +755,10 @@ async function backfillUserDownloadsToFirebase(){
         const localList=Array.isArray(currentUser.downloads)?currentUser.downloads:[];
         const updates={};
         localList.forEach(rec=>{if(rec&&rec.pluginId&&!remoteKeys.has(rec.pluginId))updates[rec.pluginId]=rec;});
-        if(Object.keys(updates).length>0){await database.ref(`users/${currentUser.minecraftId}/downloads`).update(updates);}    
+        if(Object.keys(updates).length>0){
+            await database.ref(`users/${currentUser.minecraftId}/downloads`).update(updates);
+            if(currentUser.discordId){ await database.ref(`users/${currentUser.discordId}/downloads`).update(updates); }
+        }    
     }catch(e){}
 }
 function saveLocal(){localStorage.setItem('plugins',JSON.stringify(plugins))}
@@ -1024,6 +1037,17 @@ async function setupUserBalanceListener(){
             localStorage.setItem('allUsers',JSON.stringify(allUsers));
             updateUserBalance();
         });
+        if(currentUser.discordId){
+            database.ref(`users/${currentUser.discordId}/balance`).on('value',(snapshot)=>{
+                const balance=snapshot.val();
+                if(balance==null) return;
+                const allUsers=JSON.parse(localStorage.getItem('allUsers')||'{}');
+                if(!allUsers[currentUser.minecraftId]) allUsers[currentUser.minecraftId]={minecraftId:currentUser.minecraftId,balance:0};
+                allUsers[currentUser.minecraftId].balance=balance;
+                localStorage.setItem('allUsers',JSON.stringify(allUsers));
+                updateUserBalance();
+            });
+        }
     }catch(e){}
 }
 
@@ -1197,14 +1221,14 @@ async function executeDownload(pid){
             if(!confirm(`${p.name}을(를) ${price.toLocaleString()}원에 구매하시겠습니까?\n남은 잔액: ${(userBalance-price).toLocaleString()}원`)){return;}
             allUsers[currentUser.minecraftId].balance=userBalance-price;
             localStorage.setItem('allUsers',JSON.stringify(allUsers));
-            try{ await database.ref(`users/${currentUser.minecraftId}/balance`).set(allUsers[currentUser.minecraftId].balance);}catch(e){}
+            try{ await database.ref(`users/${currentUser.minecraftId}/balance`).set(allUsers[currentUser.minecraftId].balance); if(currentUser.discordId){ await database.ref(`users/${currentUser.discordId}/balance`).set(allUsers[currentUser.minecraftId].balance);} }catch(e){}
             updateUserBalance();
             await updateDownloadInFirebase(pid);
             p.downloads++;
             const rec={pluginId:p.id,pluginName:p.name,date:new Date().toLocaleString('ko-KR')};
             if(!currentUser.downloads)currentUser.downloads=[];
             if(!currentUser.downloads.some(d=>d.pluginId===pid))currentUser.downloads.push(rec);
-            try{ await database.ref(`users/${currentUser.minecraftId}/downloads/${p.id}`).set(rec);}catch(e){}
+            try{ await database.ref(`users/${currentUser.minecraftId}/downloads/${p.id}`).set(rec); if(currentUser.discordId){ await database.ref(`users/${currentUser.discordId}/downloads/${p.id}`).set(rec);} }catch(e){}
             saveLocal();
             localStorage.setItem('currentUser',JSON.stringify(currentUser));
             renderPlugins();
@@ -1226,7 +1250,7 @@ async function executeDownload(pid){
         if(!confirm(`${p.name}을(를) ${price.toLocaleString()}원에 구매하시겠습니까?\n남은 잔액: ${(userBalance-price).toLocaleString()}원`)){return;}
         allUsers[currentUser.minecraftId].balance=userBalance-price;
         localStorage.setItem('allUsers',JSON.stringify(allUsers));
-        try{ await database.ref(`users/${currentUser.minecraftId}/balance`).set(allUsers[currentUser.minecraftId].balance);}catch(e){}
+        try{ await database.ref(`users/${currentUser.minecraftId}/balance`).set(allUsers[currentUser.minecraftId].balance); if(currentUser.discordId){ await database.ref(`users/${currentUser.discordId}/balance`).set(allUsers[currentUser.minecraftId].balance);} }catch(e){}
         updateUserBalance();
     }
     // 다운로드 처리
@@ -1234,7 +1258,7 @@ async function executeDownload(pid){
         await updateDownloadInFirebase(pid);
         p.downloads++;
         const rec={pluginId:p.id,pluginName:p.name,date:new Date().toLocaleString('ko-KR')};
-        try{ await database.ref(`users/${currentUser.minecraftId}/downloads/${p.id}`).set(rec);}catch(e){}
+        try{ await database.ref(`users/${currentUser.minecraftId}/downloads/${p.id}`).set(rec); if(currentUser.discordId){ await database.ref(`users/${currentUser.discordId}/downloads/${p.id}`).set(rec);} }catch(e){}
     }
     const rec={pluginId:p.id,pluginName:p.name,date:new Date().toLocaleString('ko-KR')};
     if(!currentUser.downloads)currentUser.downloads=[];
