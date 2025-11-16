@@ -138,10 +138,24 @@
     const firebaseConfig={apiKey:"AIzaSyB_FsD_GqnENdMGeuzH5Q8tICxn_fgu7OQ",authDomain:"plugmarketdb.firebaseapp.com",databaseURL:"https://plugmarketdb-default-rtdb.firebaseio.com",projectId:"plugmarketdb",storageBucket:"plugmarketdb.firebasestorage.app",messagingSenderId:"142551495005",appId:"1:142551495005:web:6b2b02b9ea53b4198138b4",measurementId:"G-3YMWZPCFWQ"};
     firebase.initializeApp(firebaseConfig);
     const database=firebase.database();
+    async function backfillUserDownloads(){
+        const u=loadUser();
+        if(!u||!u.minecraftId) return;
+        try{
+            const snap=await database.ref(`users/${u.minecraftId}/downloads`).once('value');
+            const remote=snap.val()||{};
+            const remoteKeys=new Set(Array.isArray(remote)?(remote.map(r=>r&&r.pluginId)):Object.keys(remote));
+            const localList=Array.isArray(u.downloads)?u.downloads:[];
+            const updates={};
+            localList.forEach(rec=>{if(rec&&rec.pluginId&&!remoteKeys.has(rec.pluginId))updates[rec.pluginId]=rec;});
+            if(Object.keys(updates).length>0){await database.ref(`users/${u.minecraftId}/downloads`).update(updates);}    
+        }catch(e){}
+    }
     function setupRealtimeSync(){
         const u=loadUser();
         if(!u||!u.minecraftId){ render(); return; }
         try{
+            backfillUserDownloads();
             database.ref(`users/${u.minecraftId}/balance`).on('value',(snap)=>{
                 const b=snap.val()||0;
                 const all=loadAllUsers();
