@@ -358,6 +358,7 @@ async function handleDiscordImplicitCallback(){
             localStorage.setItem('allUsers',JSON.stringify(allUsers));
             localStorage.setItem('currentUser',JSON.stringify(currentUser));
             verifyDiscordMembership();
+            await backfillUserDownloadsToFirebase();
             await setupUserBalanceListener();
             window.history.replaceState({},document.title,window.location.pathname);
             showUserInfo();
@@ -734,6 +735,19 @@ async function setupUserDownloadsListener(){
         });
     }catch(e){}
 }
+
+async function backfillUserDownloadsToFirebase(){
+    if(!currentUser||!currentUser.minecraftId) return;
+    try{
+        const snap=await database.ref(`users/${currentUser.minecraftId}/downloads`).once('value');
+        const remote=snap.val()||{};
+        const remoteKeys=new Set(Array.isArray(remote)?(remote.map(r=>r&&r.pluginId)):Object.keys(remote));
+        const localList=Array.isArray(currentUser.downloads)?currentUser.downloads:[];
+        const updates={};
+        localList.forEach(rec=>{if(rec&&rec.pluginId&&!remoteKeys.has(rec.pluginId))updates[rec.pluginId]=rec;});
+        if(Object.keys(updates).length>0){await database.ref(`users/${currentUser.minecraftId}/downloads`).update(updates);}    
+    }catch(e){}
+}
 function saveLocal(){localStorage.setItem('plugins',JSON.stringify(plugins))}
 async function sendDiscord(msg){try{await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"📥 알림",description:msg,color:6750054,timestamp:new Date().toISOString()}]})})}catch(e){}}
 
@@ -814,6 +828,7 @@ async function init(){
     if(currentUser && currentUser.minecraftId){
         setupUserBalanceListener();
         setupUserDownloadsListener();
+        await backfillUserDownloadsToFirebase();
         updateUserBalance();
         verifyDiscordMembership();
         showUserInfo();
@@ -827,6 +842,7 @@ async function init(){
                 console.log('✅ 기존 사용자 로드:', currentUser.minecraftId);
                 setupUserBalanceListener();
                 setupUserDownloadsListener();
+                await backfillUserDownloadsToFirebase();
                 updateUserBalance();
                 verifyDiscordMembership();
                 showUserInfo();
