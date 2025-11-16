@@ -95,7 +95,7 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>디스코드 아이디</th>
+                                    <th>마인크래프트 ID</th>
                                     <th>Discord ID</th>
                                     <th>잔액</th>
                                     <th>작업</th>
@@ -195,7 +195,7 @@
         const database = firebase.database();
         const ADMIN_DISCORD_ID = '787223885766328340';
         async function ensureFirebaseAuth(){
-            try{ await firebase.auth().signInAnonymously(); }catch(e){ console.log('Firebase 익명 로그인 실패'); }
+            return; // 인증 없이 동작
         }
         
         let currentUser = null;
@@ -483,7 +483,6 @@
         }
         
         document.addEventListener('DOMContentLoaded', async () => {
-            await ensureFirebaseAuth();
             loadTheme();
             
             console.log('관리자 체크 중...');
@@ -505,5 +504,4 @@
         </script>
     </body>
     </html>
-
 
