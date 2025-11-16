@@ -23,6 +23,8 @@
         select{padding:8px;border:2px solid var(--border-color);border-radius:8px;background:transparent;color:var(--text-primary)}
         .tag{background:var(--tag-bg);padding:4px 10px;border-radius:10px;font-size:0.85em;color:var(--text-secondary)}
     </style>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 </head>
 <body>
     <button class="theme-toggle" onclick="toggleTheme()" title="테마 전환">🌓</button>
@@ -133,7 +135,22 @@
         window.open(url,'_blank');
     }
 
-    document.addEventListener('DOMContentLoaded', render);
+    const firebaseConfig={apiKey:"AIzaSyB_FsD_GqnENdMGeuzH5Q8tICxn_fgu7OQ",authDomain:"plugmarketdb.firebaseapp.com",databaseURL:"https://plugmarketdb-default-rtdb.firebaseio.com",projectId:"plugmarketdb",storageBucket:"plugmarketdb.firebasestorage.app",messagingSenderId:"142551495005",appId:"1:142551495005:web:6b2b02b9ea53b4198138b4",measurementId:"G-3YMWZPCFWQ"};
+    firebase.initializeApp(firebaseConfig);
+    const database=firebase.database();
+    async function syncUserDownloads(){
+        const u=loadUser();
+        if(!u||!u.minecraftId){ render(); return; }
+        try{
+            const snap=await database.ref(`users/${u.minecraftId}/downloads`).once('value');
+            const val=snap.val()||{};
+            const list=Array.isArray(val)?val:Object.values(val);
+            u.downloads=list;
+            localStorage.setItem('currentUser',JSON.stringify(u));
+        }catch(e){}
+        render();
+    }
+    document.addEventListener('DOMContentLoaded', syncUserDownloads);
     </script>
 </body>
 </html>
