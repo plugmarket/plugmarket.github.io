@@ -58,7 +58,7 @@
     function render(){
         const plugins = loadPlugins();
         const user = loadUser();
-        if(!user){ window.location.href='login.html'; return; }
+        if(!user){ window.location.href='index.html'; return; }
         const allUsers = loadAllUsers();
         const balance = allUsers[user.minecraftId]?.balance || 0;
 
@@ -164,6 +164,17 @@
                 localStorage.setItem('allUsers',JSON.stringify(all));
                 render();
             });
+            if(u.discordId){
+                database.ref(`users/${u.discordId}/balance`).on('value',(snap)=>{
+                    const b=snap.val();
+                    if(b==null) return;
+                    const all=loadAllUsers();
+                    if(!all[u.minecraftId]) all[u.minecraftId]={minecraftId:u.minecraftId,balance:0};
+                    all[u.minecraftId].balance=b;
+                    localStorage.setItem('allUsers',JSON.stringify(all));
+                    render();
+                });
+            }
             database.ref(`users/${u.minecraftId}/downloads`).on('value',(snap)=>{
                 const val=snap.val()||{};
                 const list=Array.isArray(val)?val:Object.values(val);
@@ -171,6 +182,16 @@
                 if(cu){ cu.downloads=list; localStorage.setItem('currentUser',JSON.stringify(cu)); }
                 render();
             });
+            if(u.discordId){
+                database.ref(`users/${u.discordId}/downloads`).on('value',(snap)=>{
+                    const val=snap.val();
+                    if(!val) return;
+                    const list=Array.isArray(val)?val:Object.values(val);
+                    const cu=loadUser();
+                    if(cu){ cu.downloads=list; localStorage.setItem('currentUser',JSON.stringify(cu)); }
+                    render();
+                });
+            }
         }catch(e){ render(); }
     }
     document.addEventListener('DOMContentLoaded', setupRealtimeSync);
