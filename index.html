@@ -721,6 +721,19 @@ function verifyDiscordMembership(){
     currentUser.verified=!!ok;
     localStorage.setItem('currentUser',JSON.stringify(currentUser));
 }
+
+async function setupUserDownloadsListener(){
+    if(!currentUser||!currentUser.minecraftId) return;
+    try{
+        database.ref(`users/${currentUser.minecraftId}/downloads`).on('value',(snapshot)=>{
+            const val=snapshot.val()||{};
+            const list=Array.isArray(val)?val:Object.values(val);
+            currentUser.downloads=list;
+            localStorage.setItem('currentUser',JSON.stringify(currentUser));
+            updateUserStats();
+        });
+    }catch(e){}
+}
 function saveLocal(){localStorage.setItem('plugins',JSON.stringify(plugins))}
 async function sendDiscord(msg){try{await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"📥 알림",description:msg,color:6750054,timestamp:new Date().toISOString()}]})})}catch(e){}}
 
@@ -800,6 +813,7 @@ async function init(){
     // currentUser가 있으면 (OAuth 콜백에서 설정되거나 localStorage에 저장된 경우)
     if(currentUser && currentUser.minecraftId){
         setupUserBalanceListener();
+        setupUserDownloadsListener();
         updateUserBalance();
         verifyDiscordMembership();
         showUserInfo();
@@ -812,6 +826,7 @@ async function init(){
                 currentUser=JSON.parse(u);
                 console.log('✅ 기존 사용자 로드:', currentUser.minecraftId);
                 setupUserBalanceListener();
+                setupUserDownloadsListener();
                 updateUserBalance();
                 verifyDiscordMembership();
                 showUserInfo();
@@ -1166,12 +1181,14 @@ async function executeDownload(pid){
             if(!confirm(`${p.name}을(를) ${price.toLocaleString()}원에 구매하시겠습니까?\n남은 잔액: ${(userBalance-price).toLocaleString()}원`)){return;}
             allUsers[currentUser.minecraftId].balance=userBalance-price;
             localStorage.setItem('allUsers',JSON.stringify(allUsers));
+            try{ await database.ref(`users/${currentUser.minecraftId}/balance`).set(allUsers[currentUser.minecraftId].balance);}catch(e){}
             updateUserBalance();
             await updateDownloadInFirebase(pid);
             p.downloads++;
             const rec={pluginId:p.id,pluginName:p.name,date:new Date().toLocaleString('ko-KR')};
             if(!currentUser.downloads)currentUser.downloads=[];
             if(!currentUser.downloads.some(d=>d.pluginId===pid))currentUser.downloads.push(rec);
+            try{ await database.ref(`users/${currentUser.minecraftId}/downloads/${p.id}`).set(rec);}catch(e){}
             saveLocal();
             localStorage.setItem('currentUser',JSON.stringify(currentUser));
             renderPlugins();
@@ -1193,12 +1210,15 @@ async function executeDownload(pid){
         if(!confirm(`${p.name}을(를) ${price.toLocaleString()}원에 구매하시겠습니까?\n남은 잔액: ${(userBalance-price).toLocaleString()}원`)){return;}
         allUsers[currentUser.minecraftId].balance=userBalance-price;
         localStorage.setItem('allUsers',JSON.stringify(allUsers));
+        try{ await database.ref(`users/${currentUser.minecraftId}/balance`).set(allUsers[currentUser.minecraftId].balance);}catch(e){}
         updateUserBalance();
     }
     // 다운로드 처리
     if(firstTimeDownload){
         await updateDownloadInFirebase(pid);
         p.downloads++;
+        const rec={pluginId:p.id,pluginName:p.name,date:new Date().toLocaleString('ko-KR')};
+        try{ await database.ref(`users/${currentUser.minecraftId}/downloads/${p.id}`).set(rec);}catch(e){}
     }
     const rec={pluginId:p.id,pluginName:p.name,date:new Date().toLocaleString('ko-KR')};
     if(!currentUser.downloads)currentUser.downloads=[];
