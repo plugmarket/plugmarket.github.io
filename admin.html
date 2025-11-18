@@ -259,6 +259,7 @@
                         <button class="btn btn-primary" onclick="addMoneyToUser('${user.minecraftId}', 1000)" style="background:#10b981;font-size:0.9em;padding:8px 15px">+1,000원</button>
                         <button class="btn btn-primary" onclick="addMoneyToUser('${user.minecraftId}', 2000)" style="background:#3b82f6;font-size:0.9em;padding:8px 15px">+2,000원</button>
                         <button class="btn btn-primary" onclick="addMoneyToUser('${user.minecraftId}', 5000)" style="background:#8b5cf6;font-size:0.9em;padding:8px 15px">+5,000원</button>
+                        <button class="btn btn-primary" onclick="deleteUser('${user.minecraftId}')" style="background:#ef4444;font-size:0.9em;padding:8px 15px">유저 삭제</button>
                     </td>
                 </tr>
             `).join('');
@@ -358,6 +359,16 @@
             }
             
             alert(`✅ ${minecraftId}님의 잔액이 0원으로 초기화되었습니다!`);
+        }
+
+        async function deleteUser(minecraftId){
+            if(!confirm(`${minecraftId} 유저를 삭제하시겠습니까?`)) return;
+            if(users[minecraftId]){ delete users[minecraftId]; }
+            saveUsers();
+            renderUsersTable();
+            renderStats();
+            try { await database.ref(`users/${minecraftId}`).remove(); } catch(e) { console.log('ℹ️ Firebase 삭제 불가'); }
+            alert(`✅ ${minecraftId} 유저 삭제 완료!`);
         }
         
         function renderPluginsTable(){
