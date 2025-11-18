@@ -1081,6 +1081,25 @@ async function setupUserBalanceListener(){
     }catch(e){}
 }
 
+async function refreshBalanceFromFirebase(){
+    if(!currentUser) return;
+    const keys=[currentUser.minecraftId,currentUser.actualMcName,currentUser.discordId].filter(Boolean);
+    let maxBal=0; let found=false;
+    try{
+        for(const k of keys){
+            const snap=await database.ref(`users/${k}/balance`).once('value');
+            const v=snap.val();
+            if(typeof v==='number'){ maxBal=Math.max(maxBal,v); found=true; }
+        }
+        if(found){
+            const allUsers=JSON.parse(localStorage.getItem('allUsers')||'{}');
+            keys.forEach(k=>{ if(!allUsers[k]) allUsers[k]={minecraftId:k,balance:0}; allUsers[k].balance=maxBal; });
+            localStorage.setItem('allUsers',JSON.stringify(allUsers));
+            updateUserBalance();
+        }
+    }catch(e){}
+}
+
 function setupPluginCardListeners(){
     document.querySelectorAll('.btn[data-action="download"]').forEach(btn=>{
         btn.addEventListener('click',function(e){
