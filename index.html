@@ -853,6 +853,7 @@ async function init(){
         setupUserBalanceListener();
         setupUserDownloadsListener();
         await backfillUserDownloadsToFirebase();
+        await refreshBalanceFromFirebase();
         updateUserBalance();
         verifyDiscordMembership();
         showUserInfo();
@@ -867,6 +868,7 @@ async function init(){
                 setupUserBalanceListener();
                 setupUserDownloadsListener();
                 await backfillUserDownloadsToFirebase();
+                await refreshBalanceFromFirebase();
                 updateUserBalance();
                 verifyDiscordMembership();
                 showUserInfo();
@@ -1052,10 +1054,31 @@ async function setupUserBalanceListener(){
             localStorage.setItem('allUsers',JSON.stringify(allUsers));
             updateUserBalance();
         });
+        database.ref(`users/${currentUser.minecraftId}`).on('value',(snapshot)=>{
+            const val=snapshot.val(); if(!val||typeof val!=='object') return;
+            const balance=val.balance; if(typeof balance!=='number') return;
+            const allUsers=JSON.parse(localStorage.getItem('allUsers')||'{}');
+            [currentUser.minecraftId,currentUser.actualMcName,currentUser.discordId].filter(Boolean).forEach(k=>{
+                if(!allUsers[k]) allUsers[k]={minecraftId:k,balance:0};
+                allUsers[k].balance=balance;
+            });
+            localStorage.setItem('allUsers',JSON.stringify(allUsers));
+            updateUserBalance();
+        });
         if(currentUser.actualMcName){
             database.ref(`users/${currentUser.actualMcName}/balance`).on('value',(snapshot)=>{
                 const balance=snapshot.val();
                 if(balance==null) return;
+                const allUsers=JSON.parse(localStorage.getItem('allUsers')||'{}');
+                [currentUser.minecraftId,currentUser.actualMcName,currentUser.discordId].filter(Boolean).forEach(k=>{
+                    if(!allUsers[k]) allUsers[k]={minecraftId:k,balance:0};
+                    allUsers[k].balance=balance;
+                });
+                localStorage.setItem('allUsers',JSON.stringify(allUsers));
+                updateUserBalance();
+            });
+            database.ref(`users/${currentUser.actualMcName}`).on('value',(snapshot)=>{
+                const val=snapshot.val(); if(!val||typeof val!=='object') return; const balance=val.balance; if(typeof balance!=='number') return;
                 const allUsers=JSON.parse(localStorage.getItem('allUsers')||'{}');
                 [currentUser.minecraftId,currentUser.actualMcName,currentUser.discordId].filter(Boolean).forEach(k=>{
                     if(!allUsers[k]) allUsers[k]={minecraftId:k,balance:0};
@@ -1069,6 +1092,16 @@ async function setupUserBalanceListener(){
             database.ref(`users/${currentUser.discordId}/balance`).on('value',(snapshot)=>{
                 const balance=snapshot.val();
                 if(balance==null) return;
+                const allUsers=JSON.parse(localStorage.getItem('allUsers')||'{}');
+                [currentUser.minecraftId,currentUser.actualMcName,currentUser.discordId].filter(Boolean).forEach(k=>{
+                    if(!allUsers[k]) allUsers[k]={minecraftId:k,balance:0};
+                    allUsers[k].balance=balance;
+                });
+                localStorage.setItem('allUsers',JSON.stringify(allUsers));
+                updateUserBalance();
+            });
+            database.ref(`users/${currentUser.discordId}`).on('value',(snapshot)=>{
+                const val=snapshot.val(); if(!val||typeof val!=='object') return; const balance=val.balance; if(typeof balance!=='number') return;
                 const allUsers=JSON.parse(localStorage.getItem('allUsers')||'{}');
                 [currentUser.minecraftId,currentUser.actualMcName,currentUser.discordId].filter(Boolean).forEach(k=>{
                     if(!allUsers[k]) allUsers[k]={minecraftId:k,balance:0};
