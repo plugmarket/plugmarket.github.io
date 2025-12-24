@@ -42,8 +42,6 @@
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Segoe UI',sans-serif;background:var(--bg-primary);min-height:100vh;padding:20px;padding-bottom:80px;transition:background 0.3s ease}
         .container{max-width:1400px;margin:0 auto}
-        
-        /* 공지사항 배너 */
         .notice-banner{
             background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
             color:white;
@@ -77,7 +75,6 @@
             font-size:0.75em;
             font-weight:bold;
         }
-        
         header{background:var(--bg-secondary);padding:30px;border-radius:20px;box-shadow:0 2px 10px var(--shadow);margin-bottom:30px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;border:1px solid var(--border-color);transition:all 0.3s ease}
         .header-left h1{color:#667eea;font-size:2.5em;margin-bottom:10px}
         .subtitle{color:var(--text-secondary);font-size:1.1em}
@@ -86,8 +83,6 @@
         .user-id{color:var(--text-secondary);font-size:0.9em}
         .user-stats{display:flex;gap:8px;margin-top:6px;font-size:0.9em}
         .stat-item{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:4px 10px;border-radius:12px}
-        .btn-logout{margin-top:10px;padding:8px 20px;background:#ef4444;color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.9em}
-        .btn-logout:hover{background:#dc2626}
         .theme-toggle{position:fixed;top:20px;right:20px;background:var(--card-bg);border:2px solid var(--border-color);padding:12px 16px;border-radius:50px;cursor:pointer;font-size:1.5em;box-shadow:0 4px 15px var(--shadow);z-index:1000;transition:all 0.3s ease}
         .theme-toggle:hover{transform:scale(1.1);box-shadow:0 6px 20px var(--shadow-hover)}
         .search-section{background:var(--card-bg);padding:20px;border-radius:15px;margin-bottom:20px;box-shadow:0 2px 10px var(--shadow);border:1px solid var(--border-color);transition:all 0.3s ease}
@@ -154,20 +149,13 @@
         .menu-item:hover{background:var(--tag-hover)}
         .menu-item.disabled{cursor:default;color:var(--text-secondary)}
         .menu-item.danger{color:#ef4444}
-        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;justify-content:center;align-items:center}
-        .modal.active{display:flex}
-        .modal-content{background:var(--card-bg);padding:40px;border-radius:20px;max-width:600px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.15);transition:all 0.3s ease}
-        .modal-header{font-size:1.8em;margin-bottom:20px;color:var(--text-primary)}
-        .modal-body{margin-bottom:20px;line-height:1.8;color:var(--text-secondary)}
-        .modal-footer{display:flex;gap:10px}
         footer{position:fixed;bottom:0;left:0;width:100%;background:var(--footer-bg);color:white;padding:20px;text-align:center;box-shadow:0 -2px 10px rgba(0,0,0,0.1);transition:all 0.3s ease}
         @media(max-width:768px){.plugins-grid{grid-template-columns:1fr}header{flex-direction:column;text-align:center}.theme-toggle{top:10px;right:10px;padding:10px 14px}}
     </style>
 </head>
 <body>
-    <button class="theme-toggle" onclick="toggleTheme()" title="테마 전환"></button>
+    <button class="theme-toggle" onclick="toggleTheme()" title="테마 전환">🌙</button>
     
-    <!-- 공지사항 표시 영역 -->
     <div class="container" id="noticesContainer"></div>
     
     <div class="container">
@@ -179,9 +167,9 @@
             <div class="user-info" id="userInfo">
                 <div class="user-top" style="display:flex;align-items:center;gap:12px;justify-content:flex-end">
                     <div class="header-actions">
-                        <button id="btnLogin" class="chip-btn" onclick="startDiscordLogin()">로그인</button>
+                        <button id="btnLogin" class="chip-btn" onclick="startDiscordLogin()">Discord 로그인</button>
                         <div class="menu-wrapper">
-                            <button id="btnMenu" class="chip-btn" onclick="toggleMenuDropdown()">☰</button>
+                            <button id="btnMenu" class="chip-btn" onclick="toggleMenuDropdown()" style="display:none">☰</button>
                             <div id="menuDropdown" class="menu-dropdown">
                                 <div class="menu-item" onclick="requestCharge()">충전 요청</div>
                                 <div class="menu-item" onclick="showHistory()">다운로드 내역</div>
@@ -190,12 +178,12 @@
                             </div>
                         </div>
                     </div>
-                    <div>
+                    <div id="userInfoDisplay" style="display:none">
                         <p class="user-name" id="userName"></p>
                         <p class="user-id" id="userIdDisplay"></p>
                     </div>
                 </div>
-                <div class="user-stats">
+                <div class="user-stats" id="userStats" style="display:none">
                     <span class="stat-item">💰 <span id="userBalance">0</span>원</span>
                     <span class="stat-item">📥 <span id="downloadCount">0</span>개</span>
                     <span class="stat-item">⭐ <span id="avgRating">0.0</span></span>
@@ -237,15 +225,12 @@
     <footer>
         <p>대표 고가온 | 이메일: <a href="mailto:gogaon036@gmail.com" style="color:white">gogaon036@gmail.com</a></p>
     </footer>
-
-    <!-- 모달들은 기존 코드 유지 -->
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
     <script>
-    // Firebase 초기화를 함수 내부로 이동
     let database = null;
     
     function initFirebase(){
@@ -265,7 +250,11 @@
         }
         database = firebase.database();
     }
+    
     const ADMIN_DISCORD_ID = '787223885766328340';
+    const DISCORD_CLIENT_ID = '1414591036734312499';
+    const DISCORD_CLIENT_SECRET = 'q-W-Ka_4tqz9uDrtgUXefhbF7zxAI0wL';
+    const REDIRECT_URI = 'https://plugmarket.o-r.kr/';
     
     let plugins = {};
     let currentUser = null;
@@ -275,7 +264,150 @@
     let currentCategory = 'all';
     let currentSort = 'popular';
     
-    // 공지사항 로드 및 표시
+    function startDiscordLogin(){
+        const OAUTH_URL = `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=identify+guilds`;
+        window.location.href = OAUTH_URL;
+    }
+    
+    async function handleDiscordCallback(){
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        
+        if(code){
+            console.log('Discord OAuth Code 받음:', code);
+            window.history.replaceState({}, document.title, '/');
+            
+            const loadingNotice = document.createElement('div');
+            loadingNotice.className = 'notice-banner';
+            loadingNotice.id = 'loading-notice';
+            loadingNotice.style.background = 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)';
+            loadingNotice.innerHTML = `
+                <h3>🔄 로그인 처리중...</h3>
+                <p>Discord 사용자 정보를 가져오고 있습니다.</p>
+            `;
+            document.getElementById('noticesContainer').prepend(loadingNotice);
+            
+            try {
+                const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        client_id: DISCORD_CLIENT_ID,
+                        client_secret: DISCORD_CLIENT_SECRET,
+                        grant_type: 'authorization_code',
+                        code: code,
+                        redirect_uri: REDIRECT_URI
+                    })
+                });
+                
+                if(!tokenResponse.ok){
+                    throw new Error('토큰 교환 실패');
+                }
+                
+                const tokenData = await tokenResponse.json();
+                const accessToken = tokenData.access_token;
+                
+                const userResponse = await fetch('https://discord.com/api/users/@me', {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                
+                if(!userResponse.ok){
+                    throw new Error('사용자 정보 가져오기 실패');
+                }
+                
+                const discordUser = await userResponse.json();
+                console.log('Discord 사용자:', discordUser);
+                
+                const userRef = database.ref(`users/${discordUser.id}`);
+                const userSnapshot = await userRef.once('value');
+                
+                if(userSnapshot.exists()){
+                    currentUser = userSnapshot.val();
+                    currentUser.discordId = discordUser.id;
+                } else {
+                    currentUser = {
+                        id: discordUser.id,
+                        discordId: discordUser.id,
+                        name: discordUser.username,
+                        discriminator: discordUser.discriminator,
+                        avatar: discordUser.avatar,
+                        balance: 0,
+                        downloads: [],
+                        avgRating: 0,
+                        createdAt: Date.now()
+                    };
+                    
+                    await userRef.set(currentUser);
+                }
+                
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                localStorage.setItem('discordToken', accessToken);
+                
+                updateUserUI();
+                
+                const loading = document.getElementById('loading-notice');
+                if(loading) loading.remove();
+                
+                const successNotice = document.createElement('div');
+                successNotice.className = 'notice-banner';
+                successNotice.style.background = 'linear-gradient(135deg,#10b981 0%,#059669 100%)';
+                successNotice.innerHTML = `
+                    <h3>✅ 로그인 성공!</h3>
+                    <p>환영합니다, ${currentUser.name}님!</p>
+                    <button class="notice-close" onclick="this.parentElement.remove()">닫기</button>
+                `;
+                document.getElementById('noticesContainer').prepend(successNotice);
+                
+                setTimeout(() => successNotice.remove(), 5000);
+                
+            } catch(error) {
+                console.error('로그인 오류:', error);
+                
+                const loading = document.getElementById('loading-notice');
+                if(loading) loading.remove();
+                
+                const errorNotice = document.createElement('div');
+                errorNotice.className = 'notice-banner';
+                errorNotice.style.background = 'linear-gradient(135deg,#ef4444 0%,#dc2626 100%)';
+                errorNotice.innerHTML = `
+                    <h3>❌ 로그인 실패</h3>
+                    <p>${error.message}</p>
+                    <p style="font-size:0.85em;opacity:0.8;margin-top:10px">다시 시도해주세요.</p>
+                    <button class="notice-close" onclick="this.parentElement.remove()">닫기</button>
+                `;
+                document.getElementById('noticesContainer').prepend(errorNotice);
+            }
+        }
+    }
+    
+    function updateUserUI(){
+        if(currentUser){
+            document.getElementById('btnLogin').style.display = 'none';
+            document.getElementById('btnMenu').style.display = 'block';
+            document.getElementById('userInfoDisplay').style.display = 'block';
+            document.getElementById('userStats').style.display = 'flex';
+            
+            document.getElementById('userName').textContent = currentUser.name || '사용자';
+            document.getElementById('userIdDisplay').textContent = currentUser.discordId || 'ID';
+            document.getElementById('userBalance').textContent = (currentUser.balance || 0).toLocaleString();
+            document.getElementById('downloadCount').textContent = (currentUser.downloads?.length || 0);
+            document.getElementById('avgRating').textContent = (currentUser.avgRating || 0).toFixed(1);
+            
+            if(currentUser.discordId === ADMIN_DISCORD_ID){
+                document.getElementById('menuAdmin').style.display = 'block';
+            }
+        } else {
+            document.getElementById('btnLogin').style.display = 'block';
+            document.getElementById('btnMenu').style.display = 'none';
+            document.getElementById('userInfoDisplay').style.display = 'none';
+            document.getElementById('userStats').style.display = 'none';
+        }
+    }
+    
     function loadAndShowNotices(){
         const stored = localStorage.getItem('notices');
         if(stored) notices = JSON.parse(stored);
@@ -284,18 +416,16 @@
         const noticeList = Object.values(notices).filter(n => !dismissedNotices.includes(n.id));
         
         if(noticeList.length === 0){
-            container.innerHTML = '';
             return;
         }
         
-        // 중요도 순으로 정렬 (중요 공지가 먼저)
         noticeList.sort((a, b) => {
             if(a.importance === 'important' && b.importance !== 'important') return -1;
             if(a.importance !== 'important' && b.importance === 'important') return 1;
             return 0;
         });
         
-        container.innerHTML = noticeList.map(n => {
+        const noticesHTML = noticeList.map(n => {
             const badge = n.importance === 'important' ? '<span class="notice-badge">🔥 중요</span>' : '';
             return `
                 <div class="notice-banner" id="notice-${n.id}">
@@ -306,6 +436,8 @@
                 </div>
             `;
         }).join('');
+        
+        container.insertAdjacentHTML('beforeend', noticesHTML);
     }
     
     window.dismissNotice = function(noticeId){
@@ -315,7 +447,6 @@
         if(el) el.style.display = 'none';
     };
     
-    // Firebase에서 공지사항 실시간 로드
     function setupNoticesListener(){
         if(!database) return;
         try{
@@ -324,6 +455,7 @@
                 if(firebaseNotices){
                     notices = firebaseNotices;
                     localStorage.setItem('notices', JSON.stringify(notices));
+                    document.getElementById('noticesContainer').innerHTML = '';
                     loadAndShowNotices();
                 }
             });
@@ -332,7 +464,6 @@
         }
     }
     
-    // Firebase에서 플러그인 실시간 로드
     function setupPluginsListener(){
         if(!database) return;
         try{
@@ -343,11 +474,9 @@
                     plugins = firebasePlugins;
                     localStorage.setItem('plugins', JSON.stringify(plugins));
                     
-                    // 새 플러그인 체크
                     const newPluginIds = Object.keys(plugins).filter(id => !oldPluginIds.includes(id));
                     if(newPluginIds.length > 0){
                         console.log('✅ 새 플러그인 추가:', newPluginIds);
-                        // 새 플러그인 표시를 위한 플래그 설정
                         newPluginIds.forEach(id => {
                             if(plugins[id]) plugins[id]._isNew = true;
                         });
@@ -366,14 +495,15 @@
         if(!g) return;
         
         let l = Object.values(plugins);
-        if(!l || l.length === 0) return;
+        if(!l || l.length === 0) {
+            g.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-secondary);padding:40px">플러그인이 없습니다.</p>';
+            return;
+        }
         
-        // 카테고리 필터링
         if(currentCategory !== 'all'){
             l = l.filter(p => p.category === currentCategory);
         }
         
-        // 타입 필터링
         if(currentFilter === 'free'){
             l = l.filter(p => p.type === 'free');
         } else if(currentFilter === 'premium'){
@@ -382,13 +512,11 @@
             l = l.filter(p => currentUser.downloads && currentUser.downloads.some(d => d.pluginId === p.id));
         }
         
-        // 검색어 필터링
         const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
         if(searchTerm){
             l = l.filter(p => p.name.toLowerCase().includes(searchTerm) || p.description.toLowerCase().includes(searchTerm));
         }
         
-        // 정렬
         if(currentSort === 'newest'){
             l.sort((a, b) => {
                 const aTime = parseInt(a.id.substring(1)) || 0;
@@ -400,7 +528,6 @@
         } else if(currentSort === 'downloads'){
             l.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
         } else {
-            // popular: 다운로드 * 평점
             l.sort((a, b) => {
                 const aScore = (a.downloads || 0) * (a.rating || 0);
                 const bScore = (b.downloads || 0) * (b.rating || 0);
@@ -441,7 +568,6 @@
     }
     
     function setupListeners(){
-        // 카테고리 태그 클릭
         document.querySelectorAll('.category-tag').forEach(t => {
             t.addEventListener('click', function(){
                 document.querySelectorAll('.category-tag').forEach(x => x.classList.remove('active'));
@@ -451,7 +577,6 @@
             });
         });
         
-        // 필터 버튼 클릭
         document.querySelectorAll('.filter-btn').forEach(b => {
             b.addEventListener('click', function(){
                 document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
@@ -461,7 +586,6 @@
             });
         });
         
-        // 정렬 선택
         const sortSelect = document.getElementById('sortSelect');
         if(sortSelect){
             sortSelect.addEventListener('change', function(){
@@ -470,7 +594,6 @@
             });
         }
         
-        // 검색 입력
         const searchInput = document.getElementById('searchInput');
         if(searchInput){
             searchInput.addEventListener('keypress', function(e){
@@ -493,53 +616,79 @@
     }
     
     function requestCharge(){
-        alert('충전 기능은 로그인 후 사용 가능합니다.');
+        if(!currentUser){
+            alert('로그인 후 이용 가능합니다.');
+            return;
+        }
+        alert('충전 요청 기능은 준비중입니다.');
     }
     
     function showHistory(){
-        alert('다운로드 내역은 로그인 후 확인 가능합니다.');
+        if(!currentUser){
+            alert('로그인 후 이용 가능합니다.');
+            return;
+        }
+        alert('다운로드 내역:\n' + (currentUser.downloads?.length || 0) + '개의 플러그인');
     }
     
     function showDetail(pluginId){
-        alert('플러그인 상세 정보: ' + plugins[pluginId].name);
-    }
-    
-    function startDiscordLogin(){
-        alert('Discord 로그인 기능 구현 필요');
+        const plugin = plugins[pluginId];
+        if(!plugin) return;
+        alert(`플러그인: ${plugin.name}\n\n${plugin.description}\n\n버전: ${plugin.version}\n평점: ${plugin.rating}/5\n다운로드: ${plugin.downloads}회`);
     }
     
     function logout(){
         if(confirm('로그아웃 하시겠습니까?')){
             currentUser = null;
             localStorage.removeItem('currentUser');
-            location.reload();
+            localStorage.removeItem('discordToken');
+            updateUserUI();
+            renderPlugins();
         }
     }
     
     function toggleTheme(){
         const body = document.body;
         const isDark = body.classList.toggle('dark-mode');
+        const btn = document.querySelector('.theme-toggle');
+        btn.textContent = isDark ? '☀️' : '🌙';
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
     }
     
     function loadTheme(){
         const savedTheme = localStorage.getItem('theme');
-        if(savedTheme === 'dark') document.body.classList.add('dark-mode');
+        const btn = document.querySelector('.theme-toggle');
+        if(savedTheme === 'dark'){
+            document.body.classList.add('dark-mode');
+            btn.textContent = '☀️';
+        } else {
+            btn.textContent = '🌙';
+        }
     }
     
     function init(){
-        initFirebase(); // Firebase 먼저 초기화
+        initFirebase();
         loadTheme();
+        handleDiscordCallback();
+        
+        const savedUser = localStorage.getItem('currentUser');
+        if(savedUser){
+            try{
+                currentUser = JSON.parse(savedUser);
+            }catch(e){
+                console.log('사용자 정보 로드 실패');
+            }
+        }
+        
+        updateUserUI();
         loadAndShowNotices();
         setupNoticesListener();
         setupPluginsListener();
-        setupListeners(); // 이벤트 리스너 설정
+        setupListeners();
         renderPlugins();
     }
     
     document.addEventListener('DOMContentLoaded', init);
-    
-    // 나머지 기존 함수들 (showDetail, downloadPlugin 등) 유지
     </script>
 </body>
 </html>
