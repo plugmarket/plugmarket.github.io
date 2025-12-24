@@ -271,6 +271,9 @@
     let currentUser = null;
     let notices = {};
     let dismissedNotices = JSON.parse(localStorage.getItem('dismissedNotices') || '[]');
+    let currentFilter = 'all';
+    let currentCategory = 'all';
+    let currentSort = 'popular';
     
     // 공지사항 로드 및 표시
     function loadAndShowNotices(){
@@ -365,8 +368,25 @@
         let l = Object.values(plugins);
         if(!l || l.length === 0) return;
         
-        // 필터링 로직 (기존 코드 유지)
-        // ...
+        // 카테고리 필터링
+        if(currentCategory !== 'all'){
+            l = l.filter(p => p.category === currentCategory);
+        }
+        
+        // 타입 필터링
+        if(currentFilter === 'free'){
+            l = l.filter(p => p.type === 'free');
+        } else if(currentFilter === 'premium'){
+            l = l.filter(p => p.type === 'paid' && (p.price || 0) > 0);
+        } else if(currentFilter === 'downloaded' && currentUser){
+            l = l.filter(p => currentUser.downloads && currentUser.downloads.some(d => d.pluginId === p.id));
+        }
+        
+        // 검색어 필터링
+        const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+        if(searchTerm){
+            l = l.filter(p => p.name.toLowerCase().includes(searchTerm) || p.description.toLowerCase().includes(searchTerm));
+        }
         
         // 정렬
         if(currentSort === 'newest'){
@@ -375,19 +395,33 @@
                 const bTime = parseInt(b.id.substring(1)) || 0;
                 return bTime - aTime;
             });
+        } else if(currentSort === 'rating'){
+            l.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        } else if(currentSort === 'downloads'){
+            l.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
+        } else {
+            // popular: 다운로드 * 평점
+            l.sort((a, b) => {
+                const aScore = (a.downloads || 0) * (a.rating || 0);
+                const bScore = (b.downloads || 0) * (b.rating || 0);
+                return bScore - aScore;
+            });
         }
         
         g.innerHTML = l.map(p => {
             const isNew = p._isNew;
             const newBadge = isNew ? '<span class="new-badge">NEW!</span>' : '';
             const cardClass = isNew ? 'plugin-card new-plugin' : 'plugin-card';
+            const isDownloaded = currentUser && currentUser.downloads && currentUser.downloads.some(d => d.pluginId === p.id);
+            const isFree = p.type === 'free' || (p.price || 0) === 0;
+            const badgeText = isFree ? '무료' : `${(p.price || 0).toLocaleString()}원`;
+            const badgeColor = isFree ? '#10b981' : '#f59e0b';
             
-            // 플러그인 카드 HTML (기존 코드에 newBadge와 cardClass 추가)
             return `
                 <div class="${cardClass}">
                     <div style="display:flex;justify-content:space-between;align-items:center">
                         <h3 class="plugin-title">${p.name}${newBadge}</h3>
-                        <span class="plugin-badge">${p.type === 'free' ? '무료' : p.price + '원'}</span>
+                        <span class="plugin-badge" style="background:${badgeColor}">${badgeText}</span>
                     </div>
                     <span class="plugin-category">${p.category}</span>
                     <p class="plugin-description">${p.description}</p>
@@ -397,12 +431,89 @@
                         <span class="rating-count">${(p.rating || 0).toFixed(1)}</span>
                     </div>
                     <p class="plugin-downloads">📥 ${p.downloads || 0}회</p>
+                    ${isDownloaded ? '<div style="background:#10b981;color:white;padding:8px;border-radius:8px;text-align:center;margin:10px 0">✓ 다운로드 완료</div>' : ''}
                     <div class="plugin-footer">
                         <button class="btn btn-primary" onclick="showDetail('${p.id}')">상세보기</button>
                     </div>
                 </div>
             `;
         }).join('');
+    }
+    
+    function setupListeners(){
+        // 카테고리 태그 클릭
+        document.querySelectorAll('.category-tag').forEach(t => {
+            t.addEventListener('click', function(){
+                document.querySelectorAll('.category-tag').forEach(x => x.classList.remove('active'));
+                this.classList.add('active');
+                currentCategory = this.dataset.category;
+                renderPlugins();
+            });
+        });
+        
+        // 필터 버튼 클릭
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            b.addEventListener('click', function(){
+                document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                renderPlugins();
+            });
+        });
+        
+        // 정렬 선택
+        const sortSelect = document.getElementById('sortSelect');
+        if(sortSelect){
+            sortSelect.addEventListener('change', function(){
+                currentSort = this.value;
+                renderPlugins();
+            });
+        }
+        
+        // 검색 입력
+        const searchInput = document.getElementById('searchInput');
+        if(searchInput){
+            searchInput.addEventListener('keypress', function(e){
+                if(e.key === 'Enter') searchPlugins();
+            });
+        }
+    }
+    
+    function searchPlugins(){
+        renderPlugins();
+    }
+    
+    function toggleMenuDropdown(){
+        const dd = document.getElementById('menuDropdown');
+        if(dd) dd.classList.toggle('show');
+    }
+    
+    function openAdmin(){
+        window.location.href = 'admin.html';
+    }
+    
+    function requestCharge(){
+        alert('충전 기능은 로그인 후 사용 가능합니다.');
+    }
+    
+    function showHistory(){
+        alert('다운로드 내역은 로그인 후 확인 가능합니다.');
+    }
+    
+    function showDetail(pluginId){
+        alert('플러그인 상세 정보: ' + plugins[pluginId].name);
+    }
+    
+    function startDiscordLogin(){
+        alert('Discord 로그인 기능 구현 필요');
+    }
+    
+    function logout(){
+        if(confirm('로그아웃 하시겠습니까?')){
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            location.reload();
+        }
     }
     
     function toggleTheme(){
@@ -422,6 +533,7 @@
         loadAndShowNotices();
         setupNoticesListener();
         setupPluginsListener();
+        setupListeners(); // 이벤트 리스너 설정
         renderPlugins();
     }
     
