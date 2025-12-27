@@ -644,19 +644,26 @@
     <!-- 모달들 -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
-            <h2 class="modal-header">🔐 로그인</h2>
+            <h2 class="modal-header">🔐 Discord 로그인</h2>
             <div class="modal-body">
-                <div class="form-group">
-                    <label>마인크래프트 닉네임</label>
-                    <input type="text" id="mcNickname" placeholder="닉네임을 입력하세요">
+                <div style="text-align:center;padding:20px">
+                    <div style="width:80px;height:80px;margin:0 auto 20px;background:linear-gradient(135deg,#5865F2,#7289DA);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:40px">
+                        💬
+                    </div>
+                    <p style="font-size:16px;font-weight:600;margin-bottom:12px">
+                        Discord로 안전하게 로그인
+                    </p>
+                    <p style="font-size:13px;color:var(--text-sub);line-height:1.6">
+                        Discord 계정으로 간편하게 로그인하세요.<br>
+                        개인정보는 안전하게 보호됩니다.
+                    </p>
+                    <button class="btn btn-primary" onclick="handleLogin()" style="margin-top:24px;width:100%;padding:14px;font-size:15px">
+                        Discord로 계속하기
+                    </button>
                 </div>
-                <p style="font-size:13px;color:var(--text-sub)">
-                    안전한 Discord OAuth 로그인으로 연결됩니다.
-                </p>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('loginModal')">취소</button>
-                <button class="btn btn-primary" onclick="processLogin()">로그인</button>
             </div>
         </div>
     </div>
@@ -721,6 +728,11 @@
         let currentFilter = 'all';
         let notices = [];
         
+        // Discord OAuth 설정
+        const DISCORD_CLIENT_ID = '1414591036734312499';
+        const REDIRECT_URI = 'http://plugmarket.store/';
+        const DISCORD_API = 'https://discord.com/api';
+        
         // 초기 데이터 (Firebase 부하 감소)
         const defaultPlugins = [
             {id:'p1',name:'CookingPlugin',desc:'요리 시스템 플러그인',category:'게임플레이',type:'free',price:0,downloads:0,rating:4.5},
@@ -732,6 +744,9 @@
         // 초기화
         async function init() {
             showLoading(true);
+            
+            // Discord OAuth 콜백 처리
+            await handleDiscordCallback();
             
             // localStorage에서 사용자 정보 로드
             const savedUser = localStorage.getItem('currentUser');
@@ -867,38 +882,114 @@
                 document.getElementById('logoutBtn').style.display = 'block';
                 document.getElementById('balanceDisplay').textContent = 
                     (currentUser.balance || 0).toLocaleString() + '원';
+                
+                // 사용자명 표시
+                const userMenu = document.querySelector('.user-menu');
+                let userNameEl = document.getElementById('userName');
+                if(!userNameEl) {
+                    userNameEl = document.createElement('div');
+                    userNameEl.id = 'userName';
+                    userNameEl.style.cssText = 'font-weight:600;color:var(--text-main);margin-right:10px';
+                    userMenu.insertBefore(userNameEl, userMenu.firstChild);
+                }
+                userNameEl.textContent = currentUser.username + '님';
+                
             } else {
                 document.getElementById('loginBtn').style.display = 'block';
                 document.getElementById('logoutBtn').style.display = 'none';
                 document.getElementById('balanceDisplay').textContent = '0원';
+                
+                const userNameEl = document.getElementById('userName');
+                if(userNameEl) userNameEl.remove();
             }
         }
         
         // 로그인 처리
         function handleLogin() {
-            openModal('loginModal');
+            // Discord OAuth로 리다이렉트
+            const params = new URLSearchParams({
+                client_id: DISCORD_CLIENT_ID,
+                redirect_uri: REDIRECT_URI,
+                response_type: 'token',
+                scope: 'identify email'
+            });
+            
+            window.location.href = `${DISCORD_API}/oauth2/authorize?${params.toString()}`;
+        }
+        
+        // Discord OAuth 콜백 처리
+        async function handleDiscordCallback() {
+            const hash = window.location.hash.substring(1);
+            if(!hash) return;
+            
+            const params = new URLSearchParams(hash);
+            const accessToken = params.get('access_token');
+            
+            if(!accessToken) return;
+            
+            try {
+                // Discord 사용자 정보 가져오기
+                const response = await fetch(`${DISCORD_API}/users/@me`, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                });
+                
+                if(!response.ok) throw new Error('Discord API 오류');
+                
+                const discordUser = await response.json();
+                
+                // 사용자 정보 저장
+                currentUser = {
+                    id: discordUser.id,
+                    username: discordUser.username,
+                    discriminator: discordUser.discriminator,
+                    avatar: discordUser.avatar,
+                    email: discordUser.email,
+                    balance: 0,
+                    downloads: [],
+                    loginTime: Date.now()
+                };
+                
+                // 기존 사용자 정보 불러오기 (Firebase)
+                try {
+                    const snapshot = await db.ref(`users/${currentUser.id}`).once('value');
+                    const userData = snapshot.val();
+                    
+                    if(userData) {
+                        currentUser.balance = userData.balance || 0;
+                        currentUser.downloads = userData.downloads || [];
+                    } else {
+                        // 신규 사용자 등록
+                        await db.ref(`users/${currentUser.id}`).set({
+                            username: currentUser.username,
+                            balance: 0,
+                            downloads: [],
+                            createdAt: Date.now()
+                        });
+                    }
+                } catch(e) {
+                    console.log('사용자 데이터 로드 실패 (로컬 데이터 사용)');
+                }
+                
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateUserUI();
+                
+                // URL에서 해시 제거
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                alert(`✅ ${currentUser.username}님 환영합니다!`);
+                
+            } catch(e) {
+                console.error('Discord 로그인 실패:', e);
+                alert('❌ 로그인에 실패했습니다. 다시 시도해주세요.');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
         }
         
         function processLogin() {
-            const nickname = document.getElementById('mcNickname').value.trim();
-            if(!nickname) {
-                alert('닉네임을 입력해주세요');
-                return;
-            }
-            
-            // 간단한 로그인 처리 (실제로는 Discord OAuth)
-            currentUser = {
-                nickname: nickname,
-                balance: 0,
-                downloads: [],
-                loginTime: Date.now()
-            };
-            
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            updateUserUI();
-            closeModal('loginModal');
-            
-            alert('✅ 로그인 되었습니다!');
+            // 이 함수는 더 이상 사용하지 않음 (Discord OAuth로 대체)
+            handleLogin();
         }
         
         // 로그아웃
@@ -948,7 +1039,7 @@
         async function downloadPlugin(pluginId) {
             if(!currentUser) {
                 alert('로그인이 필요합니다');
-                handleLogin();
+                openModal('loginModal');
                 return;
             }
             
@@ -956,7 +1047,8 @@
             if(!plugin) return;
             
             // 이미 다운로드했는지 확인
-            if(currentUser.downloads && currentUser.downloads.includes(pluginId)) {
+            const userDownloads = currentUser.downloads || [];
+            if(userDownloads.includes(pluginId)) {
                 if(confirm('이미 다운로드한 플러그인입니다. 다시 다운로드하시겠습니까?')) {
                     performDownload(plugin);
                 }
@@ -979,24 +1071,40 @@
                 
                 // 잔액 차감
                 currentUser.balance -= plugin.price;
+                
+                // Firebase에 잔액 업데이트
+                try {
+                    await db.ref(`users/${currentUser.id}/balance`).set(currentUser.balance);
+                } catch(e) {
+                    console.log('잔액 업데이트 실패 (로컬만 저장)');
+                }
             }
             
             // 다운로드 처리
             if(!currentUser.downloads) currentUser.downloads = [];
             currentUser.downloads.push(pluginId);
             
-            // 다운로드 카운트 증가 (Throttling 적용)
+            // 다운로드 카운트 증가
             plugin.downloads++;
             
             // 로컬 저장
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
             updateUserUI();
             
-            // Firebase 업데이트 (비동기, 실패해도 계속 진행)
+            // Firebase 업데이트 (비동기)
             try {
                 await db.ref(`plugins/${pluginId}/downloads`).transaction(current => (current || 0) + 1);
+                await db.ref(`users/${currentUser.id}/downloads`).set(currentUser.downloads);
+                
+                // 구매 내역 저장
+                await db.ref(`purchases/${currentUser.id}/${Date.now()}`).set({
+                    pluginId: pluginId,
+                    pluginName: plugin.name,
+                    price: plugin.type === 'paid' ? plugin.price : 0,
+                    timestamp: Date.now()
+                });
             } catch(e) {
-                console.log('다운로드 카운트 업데이트 실패 (무시)');
+                console.log('Firebase 업데이트 실패 (무시)');
             }
             
             performDownload(plugin);
@@ -1013,7 +1121,7 @@
         }
         
         // 충전 요청
-        function submitCharge() {
+        async function submitCharge() {
             const name = document.getElementById('depositorName').value.trim();
             const amount = parseInt(document.getElementById('chargeAmount').value);
             
@@ -1022,23 +1130,50 @@
                 return;
             }
             
-            // Discord 웹훅으로 전송 (선택적)
+            if(!currentUser) {
+                alert('로그인이 필요합니다');
+                return;
+            }
+            
+            // Discord 웹훅으로 전송
             const webhook = 'https://discord.com/api/webhooks/1431904746448621569/lf5VZA1yzetYguDUDCsIJuE0B0K3CQ1TL9Ol-GYDQn5uUGRXQ5XtNGO7FoS6ZVjuwq40';
             
-            fetch(webhook, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    embeds: [{
-                        title: '💰 충전 요청',
-                        description: `**닉네임:** ${currentUser.nickname}\n**입금자명:** ${name}\n**금액:** ${amount.toLocaleString()}원\n**시간:** ${new Date().toLocaleString('ko-KR')}`,
-                        color: 3447003
-                    }]
-                })
-            }).catch(() => {});
+            try {
+                await fetch(webhook, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        embeds: [{
+                            title: '💰 충전 요청',
+                            description: `**Discord:** ${currentUser.username}#${currentUser.discriminator}\n**Discord ID:** ${currentUser.id}\n**입금자명:** ${name}\n**금액:** ${amount.toLocaleString()}원\n**시간:** ${new Date().toLocaleString('ko-KR')}`,
+                            color: 3447003,
+                            timestamp: new Date().toISOString()
+                        }]
+                    })
+                });
+            } catch(e) {
+                console.error('웹훅 전송 실패:', e);
+            }
+            
+            // Firebase에 충전 요청 기록
+            try {
+                await db.ref(`chargeRequests/${currentUser.id}/${Date.now()}`).set({
+                    depositorName: name,
+                    amount: amount,
+                    username: currentUser.username,
+                    status: 'pending',
+                    createdAt: Date.now()
+                });
+            } catch(e) {
+                console.log('충전 요청 기록 실패 (무시)');
+            }
             
             alert('✅ 충전 요청이 전송되었습니다!\n입금 확인 후 24시간 이내에 처리됩니다.');
             closeModal('chargeModal');
+            
+            // 입력 초기화
+            document.getElementById('depositorName').value = '';
+            document.getElementById('chargeAmount').value = '';
         }
         
         // 공지사항 로드
