@@ -579,6 +579,7 @@
             <nav class="nav">
                 <a class="nav-link" onclick="showAllPlugins()">플러그인</a>
                 <a class="nav-link" onclick="showMyPage()">마이페이지</a>
+                <a class="nav-link" id="adminLink" onclick="goToAdmin()" style="display:none;color:#ef4444;font-weight:700">🛠️ 관리자</a>
                 <a class="nav-link" onclick="showSupport()">고객지원</a>
             </nav>
             
@@ -732,6 +733,7 @@
         const DISCORD_CLIENT_ID = '1414591036734312499';
         const REDIRECT_URI = 'http://plugmarket.store/';
         const DISCORD_API = 'https://discord.com/api';
+        const ADMIN_USERNAME = 'gogaon0821','ummm_04887','kaon0821'; // 관리자 Discord 유저명
         
         // 초기 데이터 (Firebase 부하 감소)
         const defaultPlugins = [
@@ -894,6 +896,12 @@
                 }
                 userNameEl.textContent = currentUser.username + '님';
                 
+                // 관리자 링크 표시
+                const adminLink = document.getElementById('adminLink');
+                if(adminLink) {
+                    adminLink.style.display = currentUser.isAdmin ? 'block' : 'none';
+                }
+                
             } else {
                 document.getElementById('loginBtn').style.display = 'block';
                 document.getElementById('logoutBtn').style.display = 'none';
@@ -901,6 +909,9 @@
                 
                 const userNameEl = document.getElementById('userName');
                 if(userNameEl) userNameEl.remove();
+                
+                const adminLink = document.getElementById('adminLink');
+                if(adminLink) adminLink.style.display = 'none';
             }
         }
         
@@ -948,7 +959,8 @@
                     email: discordUser.email,
                     balance: 0,
                     downloads: [],
-                    loginTime: Date.now()
+                    loginTime: Date.now(),
+                    isAdmin: discordUser.username === ADMIN_USERNAME
                 };
                 
                 // 기존 사용자 정보 불러오기 (Firebase)
@@ -1274,6 +1286,17 @@
         
         function showSupport() {
             alert('고객지원: gogaon036@gmail.com');
+        }
+        
+        // 관리자 페이지로 이동
+        function goToAdmin() {
+            if(!currentUser || !currentUser.isAdmin) {
+                alert('⛔ 관리자만 접근할 수 있습니다.');
+                return;
+            }
+            
+            // admin.html로 이동
+            window.location.href = 'admin.html';
         }
         
         // 모달 외부 클릭 시 닫기
