@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plugmarket - Professional Minecraft Plugin Marketplace</title>
+    <title>PluginHub - Professional Minecraft Plugin Marketplace</title>
     <meta name="description" content="신뢰할 수 있는 마인크래프트 플러그인 마켓플레이스">
     <style>
         :root {
@@ -585,7 +585,7 @@
         <div class="header-content">
             <a href="#" class="logo">
                 <div class="logo-icon">🎮</div>
-                <span>Plugmarket</span>
+                <span>PluginHub</span>
             </a>
             
             <nav class="nav">
@@ -724,7 +724,7 @@
             <h2 class="modal-header">📋 이용약관</h2>
             <div class="modal-body" style="max-height:60vh;overflow-y:auto">
                 <h3 style="margin-bottom:10px">제1조 (목적)</h3>
-                <p style="margin-bottom:20px">본 약관은 Plugmarket(이하 "회사")가 제공하는 마인크래프트 플러그인 판매 서비스(이하 "서비스")의 이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.</p>
+                <p style="margin-bottom:20px">본 약관은 PluginHub(이하 "회사")가 제공하는 마인크래프트 플러그인 판매 서비스(이하 "서비스")의 이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.</p>
                 
                 <h3 style="margin-bottom:10px">제2조 (정의)</h3>
                 <p style="margin-bottom:20px">
@@ -779,7 +779,6 @@
                     - Discord 사용자명<br>
                     - 이메일 주소 (선택)<br>
                     - 서비스 이용 기록, 결제 내역
-                    - Discord 참가 되있는 서버
                 </p>
                 
                 <h3 style="margin-bottom:10px">3. 개인정보의 보유 및 이용기간</h3>
@@ -922,16 +921,27 @@
         
         // Discord OAuth 설정
         const DISCORD_CLIENT_ID = '1414591036734312499';
-        const REDIRECT_URI = 'https://plugmarket.store/';
+        const REDIRECT_URI = 'http://plugmarket.store/';
         const DISCORD_API = 'https://discord.com/api';
         const ADMIN_USERNAME = 'gogaon0821'; // 관리자 Discord 유저명
         
         // 초기 데이터 (Firebase 부하 감소)
         const defaultPlugins = [
-            {id:'p1',name:'CookingPlugin',desc:'요리 시스템 플러그인',category:'게임플레이',type:'free',price:0,downloads:0,rating:4.5},
-            {id:'p2',name:'ItemsAdder',desc:'커스텀 아이템 추가',category:'커스텀',type:'free',price:0,downloads:0,rating:4.8},
-            {id:'p3',name:'QuestPlugin',desc:'퀘스트 시스템',category:'RPG',type:'free',price:0,downloads:0,rating:4.3},
-            {id:'p4',name:'PartyPlugin',desc:'파티 플러그인',category:'게임플레이',type:'paid',price:1000,downloads:0,rating:4.7}
+            {id:'p1',name:'CookingPlugin',desc:'요리 시스템 플러그인',category:'게임플레이',type:'free',price:0,downloads:0,rating:4.5,downloadUrl:'https://www.dropbox.com/scl/fi/uqe6g4wu4vwlfh46qd9i4/CookingPlugin.jar?rlkey=nrxb0beuwyjbxqxq8d9w2oei4&st=05i0uhb6&dl=1'},
+            {id:'p2',name:'ItemsAdder',desc:'커스텀 아이템 추가',category:'커스텀',type:'free',price:0,downloads:0,rating:4.8,downloadUrl:'https://www.dropbox.com/scl/fi/jnqiumuvlm9ibos0amapv/itemsadder-1.2-paper.jar?rlkey=37p1s990yx23j2c6b4j3sjpv6&st=u3c9s9qf&dl=1'},
+            {id:'p3',name:'QuestPlugin',desc:'퀘스트 시스템',category:'RPG',type:'free',price:0,downloads:0,rating:4.3,downloadUrl:'https://www.dropbox.com/scl/fi/j7d7lh2skws90d3hqrwa1/QuestPlugin-1.5-paper.jar?rlkey=9h8n0sr4tyem40jb2bemdok6k&st=ztlrxw6w&dl=0'},
+            {id:'p4',name:'PartyPlugin',desc:'파티 플러그인 (버전 선택 가능)',category:'게임플레이',type:'paid',price:1000,downloads:0,rating:4.7,versions:{'1.21.8':'https://www.dropbox.com/scl/fi/kf8bu05yhhjyeunm2k651/party_plugin1.21.8-1.0-paper.jar?rlkey=s8n4u6qt58kxsx3k50zveiry0&st=5h9syvt8&dl=1','1.21.9':'https://www.dropbox.com/scl/fi/fgn6b55wifynx0phpjfyk/party_plugin1.21.9-1.0-paper.jar?rlkey=3p9sm1zw26ezdbqfdz3ghgk46&st=puae1d9j&dl=1','1.21.10':'https://www.dropbox.com/scl/fi/b72g118ghi65l3ffe49km/party_plugin1.21.10-1.0-paper.jar?rlkey=qkd5651rvmb8fc0c4eovd6p0a&st=qnvpru6f&dl=1'}},
+            {id:'p5',name:'RankPlugin',desc:'등급 시스템',category:'시스템',type:'free',price:0,downloads:0,rating:4.2,downloadUrl:'https://www.dropbox.com/scl/fi/o3ig4n0gxrlxuz01j1j7r/rankplugin-1.0-paper.jar?rlkey=t699uhu6eck878a6u6y36f8fq&st=ng8ro2cv&dl=0'},
+            {id:'p6',name:'RoulettePlugin',desc:'룰렛 게임',category:'게임플레이',type:'free',price:0,downloads:0,rating:4.4,downloadUrl:'https://www.dropbox.com/scl/fi/fsrnzk9u7vet81euq3afr/RoulettePlugin-1.0-paper.jar?rlkey=yi40cimkve8lim2cg4isr8n6k&st=fpwhw2jt&dl=0'},
+            {id:'p7',name:'ShopSystem',desc:'상점 시스템',category:'경제',type:'free',price:0,downloads:0,rating:4.6,downloadUrl:'https://www.dropbox.com/scl/fi/ld31twop0v6v454dhhet0/Shopsystem-1.2-paper.jar?rlkey=we1a2xxv5m25lq1wghj0o1ugf&st=t6eajl4o&dl=0'},
+            {id:'p8',name:'SpectatorOnDeath',desc:'죽으면 관전 모드',category:'게임플레이',type:'free',price:0,downloads:0,rating:4.1,downloadUrl:'https://www.dropbox.com/scl/fi/xc2fyqs65nuymhhqwzuc3/SpectatorOnDeath-1.0-paper.jar?rlkey=fwmas7lvqek4ej1atni7gwki5&st=fa482ib2&dl=1'},
+            {id:'p9',name:'SwordPlugin',desc:'커스텀 검 시스템',category:'커스텀',type:'free',price:0,downloads:0,rating:4.5,downloadUrl:'https://www.dropbox.com/scl/fi/seacbjovms352dw3yyga9/sword-1.2-paper.jar?rlkey=5cdesj2v2ax436ze7905fiifp&st=wq3aar8o&dl=1'},
+            {id:'p10',name:'HousingSystem',desc:'하우징 시스템',category:'게임플레이',type:'free',price:0,downloads:0,rating:4.7,downloadUrl:'https://www.dropbox.com/scl/fi/aex1kbkoskc0mqyrm784g/Housing_system-1.5-paper.jar?rlkey=tnj1pnr1pv66g8lhe7a63cng9&st=y8dac0fk&dl=1'},
+            {id:'p11',name:'SkillSystem',desc:'스킬 시스템',category:'RPG',type:'free',price:0,downloads:0,rating:4.3,downloadUrl:'https://www.dropbox.com/scl/fi/8hl3xexcd5h19urq7hg9g/.zip?rlkey=zhdpub1gs0q6y3hspdjr6a3py&st=u7u4apgt&dl=1'},
+            {id:'p12',name:'TitlePlugin',desc:'칭호 시스템',category:'RPG',type:'free',price:0,downloads:0,rating:4.4,downloadUrl:'https://www.dropbox.com/scl/fi/ire2014av3bzu2hbb1bha/Title_plugin-1.0-paper.jar?rlkey=szcn90jcygw5hapdinesn0rdt&st=8i9bv8yp&dl=1'},
+            {id:'p13',name:'GuildPlugin',desc:'길드 시스템',category:'시스템',type:'free',price:0,downloads:0,rating:4.6,downloadUrl:'https://www.dropbox.com/scl/fi/9zz1kxzvy8lga803xpcr6/guild_plugin-1.6-paper.jar?rlkey=bbnwl32v2dudy4okcyt6essh3&st=s7u455uo&dl=1'},
+            {id:'p14',name:'FriendPlugin',desc:'친구 시스템',category:'시스템',type:'free',price:0,downloads:0,rating:4.5,downloadUrl:'https://www.dropbox.com/scl/fi/6tr94vp2peqjns0w0c6ol/firend_plugin-1.1-paper.jar?rlkey=j0vkpwugnhjvla7npy00f9h6e&st=w4d2qeeh&dl=1'},
+            {id:'p15',name:'FeatPlugin',desc:'업적 시스템',category:'RPG',type:'free',price:0,downloads:0,rating:4.2,downloadUrl:'https://www.dropbox.com/scl/fi/3ek8mel47meriwoddo285/feat_plugin-1.0-paper.jar?rlkey=uaxsj4geluvi0colpfb7c7x65&st=gjq7yixv&dl=1'}
         ];
         
         // 초기화
@@ -1271,6 +1281,24 @@
             const plugin = allPlugins.find(p => p.id === pluginId);
             if(!plugin) return;
             
+            // 버전 선택 UI (PartyPlugin만)
+            let versionSelector = '';
+            if(plugin.id === 'p4' && plugin.versions) {
+                versionSelector = `
+                    <div style="background:var(--bg-main);padding:20px;border-radius:12px;margin:20px 0">
+                        <p style="font-weight:600;margin-bottom:12px">📦 마인크래프트 버전 선택</p>
+                        <select id="versionSelect" style="width:100%;padding:12px;border:2px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-main);font-size:14px">
+                            ${Object.keys(plugin.versions).map(v => 
+                                `<option value="${v}">마인크래프트 ${v}</option>`
+                            ).join('')}
+                        </select>
+                        <p style="font-size:13px;color:var(--text-sub);margin-top:8px">
+                            💡 서버 버전에 맞는 플러그인을 선택하세요
+                        </p>
+                    </div>
+                `;
+            }
+            
             document.getElementById('pluginModalTitle').textContent = plugin.name;
             document.getElementById('pluginModalBody').innerHTML = `
                 <div style="margin-bottom:20px">
@@ -1280,6 +1308,7 @@
                     <p style="margin-bottom:12px"><strong>평점:</strong> ⭐ ${plugin.rating}/5.0</p>
                     <p style="margin-bottom:12px"><strong>다운로드:</strong> ${plugin.downloads}회</p>
                 </div>
+                ${versionSelector}
                 <div style="background:var(--bg-main);padding:20px;border-radius:12px">
                     <p style="font-weight:600;margin-bottom:8px">✅ 안전한 플러그인</p>
                     <p style="font-size:13px;color:var(--text-sub)">
@@ -1375,10 +1404,26 @@
         
         // 실제 다운로드 수행
         function performDownload(plugin) {
-            alert(`✅ ${plugin.name} 다운로드가 시작됩니다!`);
+            let downloadUrl = plugin.downloadUrl;
             
-            // 실제 다운로드 URL이 있다면 열기
-            // window.open(plugin.downloadUrl, '_blank');
+            // PartyPlugin이고 버전이 있으면 선택된 버전 사용
+            if(plugin.id === 'p4' && plugin.versions) {
+                const versionSelect = document.getElementById('versionSelect');
+                if(versionSelect) {
+                    const selectedVersion = versionSelect.value;
+                    downloadUrl = plugin.versions[selectedVersion] || plugin.downloadUrl;
+                    alert(`✅ ${plugin.name} (마인크래프트 ${selectedVersion}) 다운로드가 시작됩니다!`);
+                } else {
+                    alert(`✅ ${plugin.name} 다운로드가 시작됩니다!`);
+                }
+            } else {
+                alert(`✅ ${plugin.name} 다운로드가 시작됩니다!`);
+            }
+            
+            // 실제 다운로드
+            if(downloadUrl) {
+                window.open(downloadUrl, '_blank');
+            }
             
             renderPlugins();
         }
@@ -1542,7 +1587,7 @@
         // Discord 서버 열기
         function openDiscordServer() {
             // Discord 서버 초대 링크 (본인의 서버 링크로 변경)
-            window.open('https://discord.gg/XUcRMGQkUN', '_blank');
+            window.open('https://discord.gg/your-server-invite', '_blank');
         }
         
         // 약관 모달들
