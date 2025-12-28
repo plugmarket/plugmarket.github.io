@@ -382,6 +382,7 @@
             flex: 1;
             padding: 10px;
             font-size: 13px;
+            cursor: pointer;
         }
         
         /* 모달 */
@@ -1037,7 +1038,7 @@
             }
             
             grid.innerHTML = filtered.map(p => `
-                <div class="plugin-card" onclick="showPluginDetail('${p.id}')">
+                <div class="plugin-card">
                     <div class="plugin-header">
                         <div>
                             <h3 class="plugin-title">${p.name}</h3>
@@ -1053,10 +1054,10 @@
                         <div class="stat-item">📥 ${p.downloads}</div>
                     </div>
                     <div class="plugin-actions">
-                        <button class="btn btn-primary" onclick="event.stopPropagation();downloadPlugin('${p.id}')">
+                        <button class="btn btn-primary" onclick="downloadPlugin('${p.id}')">
                             ${p.type === 'free' ? '다운로드' : '구매하기'}
                         </button>
-                        <button class="btn btn-secondary" onclick="event.stopPropagation();showPluginDetail('${p.id}')">
+                        <button class="btn btn-secondary" onclick="showPluginDetail('${p.id}')">
                             상세보기
                         </button>
                     </div>
