@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plugmarket - Professional Minecraft Plugin Marketplace</title>
+    <title>PluginHub - Professional Minecraft Plugin Marketplace</title>
     <meta name="description" content="신뢰할 수 있는 마인크래프트 플러그인 마켓플레이스">
     <style>
         :root {
@@ -96,6 +96,7 @@
             display: flex;
             gap: 30px;
             align-items: center;
+            flex-wrap: wrap;
         }
         
         .nav-link {
@@ -540,7 +541,9 @@
         /* 반응형 */
         @media (max-width: 768px) {
             .nav {
-                display: none;
+                display: flex !important;
+                width: 100%;
+                justify-content: center;
             }
             
             .plugins-grid {
@@ -582,7 +585,7 @@
         <div class="header-content">
             <a href="#" class="logo">
                 <div class="logo-icon">🎮</div>
-                <span>Plugmarket</span>
+                <span>PluginHub</span>
             </a>
             
             <nav class="nav">
@@ -639,7 +642,7 @@
                 <a href="#" class="footer-link" onclick="showRefund(); return false;">환불정책</a>
                 <a href="#" class="footer-link" onclick="showSupport(); return false;">문의하기</a>
             </div>
-            <p>© 2024 Plugmarket. All rights reserved.</p>
+            <p>© 2024 PluginHub. All rights reserved.</p>
             <p style="margin-top:8px;font-size:13px">대표: 고가온 | 이메일: gogaon036@gmail.com</p>
             <div style="margin-top:16px">
                 <span class="verified-badge">✓ SSL 보안 인증</span>
@@ -1066,6 +1069,8 @@
         
         // 사용자 UI 업데이트
         function updateUserUI() {
+            console.log('updateUserUI 호출됨, currentUser:', currentUser);
+            
             if(currentUser) {
                 document.getElementById('loginBtn').style.display = 'none';
                 document.getElementById('logoutBtn').style.display = 'block';
@@ -1085,13 +1090,19 @@
                 
                 // 관리자 링크 표시
                 const adminLink = document.getElementById('adminLink');
+                console.log('adminLink 요소:', adminLink);
+                console.log('currentUser.isAdmin:', currentUser.isAdmin);
+                
                 if(adminLink) {
-                    if(currentUser.isAdmin) {
-                        adminLink.style.display = 'block';
-                        console.log('✅ 관리자 권한 확인:', currentUser.username);
+                    if(currentUser.isAdmin === true) {
+                        adminLink.style.display = 'inline-block';
+                        console.log('✅ 관리자 메뉴 표시됨');
                     } else {
                         adminLink.style.display = 'none';
+                        console.log('❌ 관리자 아님, 메뉴 숨김');
                     }
+                } else {
+                    console.error('❌ adminLink 요소를 찾을 수 없음!');
                 }
                 
             } else {
@@ -1120,7 +1131,7 @@
                 client_id: DISCORD_CLIENT_ID,
                 redirect_uri: REDIRECT_URI,
                 response_type: 'token',
-                scope: 'identify email'
+                scope: 'identify email guilds'  // guilds 권한 추가
             });
             
             window.location.href = `${DISCORD_API}/oauth2/authorize?${params.toString()}`;
@@ -1148,6 +1159,25 @@
                 
                 const discordUser = await response.json();
                 
+                console.log('Discord 사용자 정보:', discordUser);
+                
+                // Discord 서버 목록 가져오기
+                let guilds = [];
+                try {
+                    const guildsResponse = await fetch(`${DISCORD_API}/users/@me/guilds`, {
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`
+                        }
+                    });
+                    
+                    if(guildsResponse.ok) {
+                        guilds = await guildsResponse.json();
+                        console.log('참가한 서버 목록:', guilds);
+                    }
+                } catch(e) {
+                    console.log('서버 목록 로드 실패');
+                }
+                
                 // 사용자 정보 저장
                 currentUser = {
                     id: discordUser.id,
@@ -1155,11 +1185,18 @@
                     discriminator: discordUser.discriminator,
                     avatar: discordUser.avatar,
                     email: discordUser.email,
+                    guilds: guilds,
                     balance: 0,
                     downloads: [],
                     loginTime: Date.now(),
                     isAdmin: discordUser.username === ADMIN_USERNAME
                 };
+                
+                console.log('관리자 체크:', {
+                    username: discordUser.username,
+                    adminUsername: ADMIN_USERNAME,
+                    isAdmin: currentUser.isAdmin
+                });
                 
                 // 기존 사용자 정보 불러오기 (Firebase)
                 try {
@@ -1174,6 +1211,7 @@
                         await db.ref(`users/${currentUser.id}`).set({
                             username: currentUser.username,
                             email: currentUser.email,
+                            guilds: guilds.map(g => ({id: g.id, name: g.name})),
                             balance: 0,
                             downloads: [],
                             isAdmin: currentUser.isAdmin,
@@ -1185,12 +1223,24 @@
                 }
                 
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                console.log('로그인 완료! currentUser:', currentUser);
+                
                 updateUserUI();
                 
                 // URL에서 해시 제거
                 window.history.replaceState({}, document.title, window.location.pathname);
                 
-                alert(`✅ ${currentUser.username}님 환영합니다!`);
+                // 참가한 서버 표시
+                let guildsList = '';
+                if(guilds.length > 0) {
+                    guildsList = '\n\n참가한 서버:\n' + guilds.slice(0, 5).map(g => '• ' + g.name).join('\n');
+                    if(guilds.length > 5) {
+                        guildsList += `\n...외 ${guilds.length - 5}개`;
+                    }
+                }
+                
+                alert(`✅ ${currentUser.username}님 환영합니다!${guildsList}`);
                 
             } catch(e) {
                 console.error('Discord 로그인 실패:', e);
