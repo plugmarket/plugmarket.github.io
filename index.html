@@ -1054,10 +1054,10 @@
                         <div class="stat-item">📥 ${p.downloads}</div>
                     </div>
                     <div class="plugin-actions">
-                        <button class="btn btn-primary" onclick="downloadPlugin('${p.id}')">
+                        <button class="btn btn-primary" onclick="window.downloadPlugin('${p.id}'); return false;">
                             ${p.type === 'free' ? '다운로드' : '구매하기'}
                         </button>
-                        <button class="btn btn-secondary" onclick="showPluginDetail('${p.id}')">
+                        <button class="btn btn-secondary" onclick="window.showPluginDetail('${p.id}'); return false;">
                             상세보기
                         </button>
                     </div>
@@ -1278,7 +1278,9 @@
         }
         
         // 플러그인 상세보기
-        function showPluginDetail(pluginId) {
+        window.showPluginDetail = function(pluginId) {
+            console.log('showPluginDetail 호출됨:', pluginId);
+            
             const plugin = allPlugins.find(p => p.id === pluginId);
             if(!plugin) return;
             
@@ -1329,7 +1331,9 @@
         }
         
         // 다운로드/구매
-        async function downloadPlugin(pluginId) {
+        window.downloadPlugin = async function(pluginId) {
+            console.log('downloadPlugin 호출됨:', pluginId);
+            
             if(!currentUser) {
                 alert('로그인이 필요합니다');
                 openModal('loginModal');
@@ -1337,7 +1341,12 @@
             }
             
             const plugin = allPlugins.find(p => p.id === pluginId);
-            if(!plugin) return;
+            if(!plugin) {
+                alert('플러그인을 찾을 수 없습니다');
+                return;
+            }
+            
+            console.log('플러그인 정보:', plugin);
             
             // 이미 다운로드했는지 확인
             const userDownloads = currentUser.downloads || [];
@@ -1401,7 +1410,7 @@
             }
             
             performDownload(plugin);
-        }
+        };
         
         // 실제 다운로드 수행
         function performDownload(plugin) {
